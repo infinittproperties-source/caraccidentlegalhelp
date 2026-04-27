@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Illinois Car Accident Case Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #0f0f0f;
+  --paper: #f5f0e8;
+  --cream: #ede8dc;
+  --red: #c0392b;
+  --red-dark: #8b1a11;
+  --red-light: #fdf0ef;
+  --green: #1a6b3a;
+  --green-light: #eaf4ee;
+  --amber: #b8620a;
+  --amber-light: #fef6e7;
+  --border: #d4cfc3;
+  --muted: #6b6560;
+  --card: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6;}
+.masthead{background:var(--ink);color:var(--paper);padding:2rem 2.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.masthead-left .eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-bottom:.4rem;}
+.masthead-left h1{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;line-height:1.1;color:var(--paper);}
+.masthead-left h1 span{color:var(--red);font-style:italic;}
+.masthead-right{text-align:right;}
+.masthead-right .tag{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;margin-bottom:.5rem;}
+.masthead-right p{font-size:12px;color:#aaa;max-width:180px;}
+.tabs{background:var(--cream);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 2.5rem;gap:0;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--muted);border:none;background:none;padding:1rem 1.25rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;letter-spacing:.02em;transition:all .15s;}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn.active{color:var(--red-dark);border-bottom-color:var(--red);font-weight:600;}
+.container{max-width:960px;margin:0 auto;padding:2rem 2.5rem;}
+.panel{display:none;animation:fadein .2s ease;}
+.panel.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.section-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);}
+.eyebrow-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;display:block;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;}
+@media(max-width:640px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}.masthead{padding:1.5rem;}.tabs{padding:0 1rem;}.container{padding:1.5rem 1rem;}}
+label{font-size:13px;font-weight:500;color:var(--muted);display:block;margin-bottom:5px;}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);transition:border .15s;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:#999;}
+textarea{resize:vertical;min-height:80px;}
+.field{margin-bottom:1rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;box-shadow:var(--shadow);}
+.metric-card{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:1rem;}
+.metric-card .m-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px;}
+.metric-card .m-value{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ink);line-height:1.1;}
+.metric-card .m-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.range-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;}
+.range-card .r-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.range-card .r-value{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);}
+.range-card .r-desc{font-size:11px;color:var(--muted);margin-top:3px;}
+.range-card.low .r-label{color:var(--green);}
+.range-card.mid .r-label{color:var(--amber);}
+.range-card.high .r-label{color:var(--red);}
+.btn-primary{display:block;width:100%;padding:12px;background:var(--ink);color:var(--paper);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.02em;transition:background .15s;margin-top:1.25rem;text-align:center;}
+.btn-primary:hover{background:#2a2a2a;}
+.btn-outline{display:inline-block;padding:9px 18px;background:transparent;color:var(--ink);border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;text-decoration:none;}
+.btn-outline:hover{background:var(--cream);border-color:#999;}
+.check-list{display:flex;flex-direction:column;gap:6px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;}
+.check-item.done{background:var(--green-light);border-color:#a8d5b8;}
+.check-box{width:18px;height:18px;border:1.5px solid #ccc;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s;}
+.check-item.done .check-box{background:var(--green);border-color:var(--green);}
+.check-mark{display:none;color:#fff;font-size:11px;font-weight:700;}
+.check-item.done .check-mark{display:block;}
+.check-text{font-size:13px;font-weight:500;color:var(--ink);}
+.check-item.done .check-text{color:#1a5c32;}
+.check-note{font-size:11px;color:var(--muted);margin-top:2px;}
+.check-item.done .check-note{color:#2d7a4e;}
+.urgent-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px;}
+.progress-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:.75rem;}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s;}
+.statute-row{display:flex;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border);}
+.statute-row:last-child{border-bottom:none;}
+.statute-code{font-family:'DM Mono',monospace;font-size:11px;background:var(--cream);border:1px solid var(--border);border-radius:4px;padding:3px 7px;white-space:nowrap;flex-shrink:0;color:var(--red-dark);height:fit-content;margin-top:2px;}
+.statute-text{font-size:13px;color:var(--ink);}
+.statute-note{font-size:11px;color:var(--muted);margin-top:2px;}
+.fault-bar{height:22px;border-radius:6px;background:var(--cream);position:relative;overflow:hidden;border:1px solid var(--border);}
+.fault-fill-def{position:absolute;right:0;top:0;height:100%;background:var(--green);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;transition:width .3s;}
+.fault-fill-cli{position:absolute;left:0;top:0;height:100%;background:var(--red);display:flex;align-items:center;justify-content:flex-start;padding-left:8px;transition:width .3s;}
+.fault-label{font-size:11px;font-weight:600;color:#fff;z-index:1;}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase;}
+.badge-red{background:var(--red-light);color:var(--red-dark);}
+.badge-green{background:var(--green-light);color:var(--green);}
+.badge-amber{background:var(--amber-light);color:var(--amber);}
+.alert{padding:.75rem 1rem;border-radius:8px;font-size:13px;margin-top:.75rem;}
+.alert-green{background:var(--green-light);border:1px solid #a8d5b8;color:#1a5c32;}
+.alert-amber{background:var(--amber-light);border:1px solid #e8c07a;color:#7a4506;}
+.alert-red{background:var(--red-light);border:1px solid #f0b0aa;color:var(--red-dark);}
+.firm-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;box-shadow:var(--shadow);margin-bottom:1rem;}
+.firm-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.firm-meta{font-size:12px;color:var(--muted);margin-bottom:.75rem;}
+.firm-total{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--red-dark);background:var(--red-light);border:1px solid #f0b0aa;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:.75rem;}
+.firm-cases{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:.75rem;font-style:italic;border-left:3px solid var(--border);padding-left:.75rem;}
+.firm-contact{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);}
+.firm-contact span{display:flex;align-items:flex-start;gap:6px;}
+.firm-contact strong{color:var(--ink);flex-shrink:0;}
+.deadline-list{display:flex;flex-direction:column;gap:6px;}
+.deadline-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;}
+.d-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.d-red{background:var(--red);}
+.d-amber{background:var(--amber);}
+.d-green{background:var(--green);}
+.d-body{flex:1;}
+.d-title{font-size:13px;font-weight:600;color:var(--ink);}
+.d-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.d-when{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;margin-top:4px;}
+.car-preview{background:var(--ink);border-radius:10px;padding:1.5rem;color:var(--paper);margin-top:1rem;}
+.car-preview h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.75rem;color:var(--paper);}
+.car-spec{display:flex;justify-content:space-between;font-size:13px;padding:.4rem 0;border-bottom:1px solid #333;}
+.car-spec:last-child{border-bottom:none;}
+.car-spec span{color:#aaa;}
+.car-spec strong{color:var(--paper);}
+.cars-link{display:inline-block;margin-top:1rem;padding:10px 18px;background:var(--red);color:#fff;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;transition:background .15s;}
+.cars-link:hover{background:var(--red-dark);}
+.summary-box{background:var(--ink);color:var(--paper);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;}
+.summary-box h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1rem;color:var(--paper);}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;}
+.summary-stat{text-align:center;}
+.summary-stat .s-val{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#fff;}
+.summary-stat .s-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.disclaimer{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;font-size:11px;color:var(--muted);margin-top:1.5rem;line-height:1.6;}
+hr.divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
+
+/* ===== DOCUMENT UPLOAD ===== */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fff;position:relative;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--red);background:var(--red-light);}
+.upload-zone input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.upload-icon{font-size:2rem;margin-bottom:.5rem;}
+.upload-label{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.upload-hint{font-size:12px;color:var(--muted);}
+.doc-category{margin-bottom:1.5rem;}
+.doc-cat-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;}
+.doc-cat-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.doc-cat-badge.critical{background:var(--red-light);color:var(--red-dark);}
+.doc-cat-badge.important{background:var(--amber-light);color:var(--amber);}
+.doc-cat-badge.supporting{background:var(--green-light);color:var(--green);}
+.doc-slot{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:all .2s;position:relative;}
+.doc-slot.has-file{border-color:#a8d5b8;background:var(--green-light);}
+.doc-slot-icon{font-size:1.2rem;flex-shrink:0;width:28px;text-align:center;}
+.doc-slot-info{flex:1;min-width:0;}
+.doc-slot-name{font-size:13px;font-weight:600;color:var(--ink);}
+.doc-slot.has-file .doc-slot-name{color:#1a5c32;}
+.doc-slot-hint{font-size:11px;color:var(--muted);margin-top:1px;}
+.doc-slot-status{font-size:11px;font-weight:500;flex-shrink:0;}
+.doc-slot-status.empty{color:var(--muted);}
+.doc-slot-status.uploaded{color:var(--green);}
+.doc-slot-actions{display:flex;gap:6px;align-items:center;}
+.btn-upload-slot{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--muted);white-space:nowrap;transition:all .15s;}
+.btn-upload-slot:hover{border-color:#999;color:var(--ink);}
+.btn-view-doc{font-size:11px;padding:4px 10px;border:1px solid var(--green);border-radius:5px;background:var(--green-light);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--green);white-space:nowrap;transition:all .15s;}
+.btn-remove-doc{font-size:11px;padding:4px 8px;border:1px solid #f0b0aa;border-radius:5px;background:var(--red-light);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--red-dark);}
+.hidden-input{display:none;}
+.doc-progress{margin-top:1rem;background:var(--cream);border-radius:8px;padding:.75rem 1rem;}
+.doc-progress-bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:.5rem 0;}
+.doc-progress-fill{height:100%;border-radius:4px;background:var(--green);transition:width .3s;}
+
+/* ===== DOC VIEWER MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:12px;max-width:820px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);}
+.modal-close{font-size:1.4rem;background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 8px;border-radius:4px;transition:background .15s;}
+.modal-close:hover{background:var(--cream);}
+.modal-body{flex:1;overflow:auto;padding:1rem;display:flex;flex-direction:column;align-items:center;background:#f0f0f0;}
+.modal-body img{max-width:100%;max-height:70vh;object-fit:contain;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.modal-body iframe{width:100%;height:70vh;border:none;border-radius:4px;}
+.modal-body .no-preview{padding:3rem;text-align:center;color:var(--muted);font-size:14px;}
+.modal-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center;flex-shrink:0;flex-wrap:wrap;}
+
+/* ===== CARS.COM MARKET VALUE PANEL ===== */
+.market-panel{background:var(--ink);border-radius:10px;padding:1.5rem;color:var(--paper);margin-top:1rem;}
+.market-panel h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--paper);}
+.market-listing{background:rgba(255,255,255,.07);border-radius:8px;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.ml-info{flex:1;}
+.ml-title{font-size:13px;font-weight:600;color:var(--paper);}
+.ml-detail{font-size:11px;color:#aaa;margin-top:2px;}
+.ml-price{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#4ade80;white-space:nowrap;}
+.market-avg{background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem 1rem;margin-top:.75rem;display:flex;align-items:center;justify-content:space-between;}
+.market-avg-label{font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;}
+.market-avg-val{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#fff;}
+
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-left">
+    <div class="eyebrow">Illinois Personal Injury Law</div>
+    <h1>Car Accident<br/><span>Case Analyzer</span></h1>
+  </div>
+  <div class="masthead-right">
+    <div class="tag">Cook County · Chicago</div>
+    <p>Built for victims. Powered by IL law & settlement data.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('intake',this)">Accident Details</button>
+  <button class="tab-btn" onclick="showTab('vehicle',this)">Vehicle & Total Loss</button>
+  <button class="tab-btn" onclick="showTab('damages',this)">Damages & Fault</button>
+  <button class="tab-btn" onclick="showTab('evidence',this)">Evidence Checklist</button>
+  <button class="tab-btn" onclick="showTab('deadlines',this)">Deadlines</button>
+  <button class="tab-btn" onclick="showTab('law',this)">IL Law</button>
+  <button class="tab-btn" onclick="showTab('firms',this)">Top IL Firms</button>
+  <button class="tab-btn" onclick="showTab('docs',this)">📎 Documents</button>
+  <button class="tab-btn" onclick="showTab('report',this)">📋 Full Report</button>
+</div>
+
+<!-- ===================== TAB 1: INTAKE ===================== -->
+<div id="tab-intake" class="panel active">
+<div class="container">
+  <div class="section-title">Accident Details Questionnaire</div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Step 1 — The Accident</span>
+    <div class="grid-2">
+      <div class="field"><label>Type of collision</label>
+        <select id="q-type">
+          <option>Rear-end collision</option>
+          <option>T-bone / side impact</option>
+          <option>Head-on collision</option>
+          <option>Sideswipe</option>
+          <option>Multi-vehicle pileup</option>
+          <option>Hit and run</option>
+          <option>Truck / commercial vehicle</option>
+          <option>Rideshare (Uber/Lyft)</option>
+        </select>
+      </div>
+      <div class="field"><label>Date of accident</label><input type="date" id="q-date"/></div>
+      <div class="field"><label>County</label>
+        <select id="q-county">
+          <option>Cook (Chicago)</option>
+          <option>DuPage</option>
+          <option>Lake</option>
+          <option>Will</option>
+          <option>Kane</option>
+          <option>McHenry</option>
+          <option>Winnebago</option>
+          <option>Other Illinois county</option>
+        </select>
+      </div>
+      <div class="field"><label>Location / intersection</label><input type="text" id="q-location" placeholder="e.g. I-90 near Touhy Ave, Skokie"/></div>
+    </div>
+    <div class="field"><label>Brief description of what happened</label>
+      <textarea id="q-desc" placeholder="e.g. I was stopped at a red light when the other driver rear-ended my vehicle at speed. The force pushed me into the intersection..."></textarea>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Step 2 — Fault & Police</span>
+    <div class="grid-2">
+      <div class="field"><label>Police report filed?</label>
+        <select id="q-police">
+          <option>Yes — other driver was cited</option>
+          <option>Yes — no citations issued</option>
+          <option>Yes — I was cited</option>
+          <option>No report filed</option>
+        </select>
+      </div>
+      <div class="field"><label>Your estimated fault %</label>
+        <select id="q-fault">
+          <option value="0">0% — not at fault at all</option>
+          <option value="10">~10%</option>
+          <option value="20">~20%</option>
+          <option value="30">~30%</option>
+          <option value="40">~40%</option>
+          <option value="50">~50% — shared fault</option>
+          <option value="60">~60%+ — mostly at fault</option>
+        </select>
+      </div>
+      <div class="field"><label>At-fault driver's insurance carrier</label><input type="text" id="q-insurer" placeholder="e.g. State Farm, Allstate, Geico"/></div>
+      <div class="field"><label>Known policy limits (if any)</label>
+        <select id="q-limits">
+          <option>Unknown</option>
+          <option>$25,000 / $50,000 (IL minimum)</option>
+          <option>$50,000 / $100,000</option>
+          <option>$100,000 / $300,000</option>
+          <option>$250,000+</option>
+          <option>$1,000,000+ (commercial)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Step 3 — Injuries</span>
+    <div class="grid-2">
+      <div class="field"><label>Injury severity</label>
+        <select id="q-severity" onchange="calcDamages()">
+          <option value="minor">Minor — bruises, mild whiplash, soft tissue</option>
+          <option value="moderate">Moderate — fractures, severe whiplash, surgery</option>
+          <option value="severe">Severe — TBI, spinal cord, permanent injury</option>
+          <option value="catastrophic">Catastrophic — paralysis, permanent disability</option>
+          <option value="wrongful">Wrongful death</option>
+        </select>
+      </div>
+      <div class="field"><label>Are you still in treatment?</label>
+        <select id="q-treatment">
+          <option>Yes — ongoing treatment</option>
+          <option>No — treatment complete</option>
+          <option>Not yet sought treatment</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Describe injuries</label>
+      <textarea id="q-injuries" placeholder="e.g. Whiplash, cervical strain, lower back pain, headaches. Currently in physical therapy 3x/week..."></textarea>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Step 4 — Financial Damages</span>
+    <div class="grid-2">
+      <div class="field"><label>Medical bills to date ($)</label><input type="number" id="q-med" placeholder="0" oninput="calcDamages()"/></div>
+      <div class="field"><label>Future medical estimate ($)</label><input type="number" id="q-futmed" placeholder="0" oninput="calcDamages()"/></div>
+      <div class="field"><label>Lost wages ($)</label><input type="number" id="q-wages" placeholder="0" oninput="calcDamages()"/></div>
+      <div class="field"><label>Other losses ($)</label><input type="number" id="q-other" placeholder="0" oninput="calcDamages()"/></div>
+    </div>
+  </div>
+
+  <div id="intake-summary" style="display:none;">
+    <div class="summary-box">
+      <h3>Quick Case Summary</h3>
+      <div class="summary-grid">
+        <div class="summary-stat"><div class="s-val" id="sum-econ">$0</div><div class="s-lbl">Economic damages</div></div>
+        <div class="summary-stat"><div class="s-val" id="sum-pain">$0</div><div class="s-lbl">Pain & suffering</div></div>
+        <div class="summary-stat"><div class="s-val" id="sum-gross">$0</div><div class="s-lbl">Gross total</div></div>
+        <div class="summary-stat"><div class="s-val" id="sum-net" style="color:#4ade80;">$0</div><div class="s-lbl">Net (after fault)</div></div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="range-card low"><div class="r-label">Low estimate</div><div class="r-value" id="est-low">$—</div><div class="r-desc">Quick pre-litigation offer</div></div>
+      <div class="range-card mid"><div class="r-label">Mid estimate</div><div class="r-value" id="est-mid">$—</div><div class="r-desc">Attorney-negotiated</div></div>
+      <div class="range-card high"><div class="r-label">High estimate</div><div class="r-value" id="est-high">$—</div><div class="r-desc">Cook County jury verdict</div></div>
+    </div>
+    <div id="fault-alert" class="alert alert-green" style="margin-top:.75rem;"></div>
+  </div>
+
+  <button class="btn-primary" onclick="calcDamages();document.getElementById('intake-summary').style.display='block';">Calculate My Case Value</button>
+</div>
+</div>
+
+<!-- ===================== TAB 2: VEHICLE ===================== -->
+<div id="tab-vehicle" class="panel">
+<div class="container">
+  <div class="section-title">Vehicle Condition & Total Loss Estimator</div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Vehicle Information</span>
+    <div class="grid-2">
+      <div class="field"><label>Year</label><input type="number" id="v-year" placeholder="e.g. 2019" oninput="buildCarsUrl()"/></div>
+      <div class="field"><label>Make</label><input type="text" id="v-make" placeholder="e.g. Toyota" oninput="buildCarsUrl()"/></div>
+      <div class="field"><label>Model</label><input type="text" id="v-model" placeholder="e.g. Camry" oninput="buildCarsUrl()"/></div>
+      <div class="field"><label>Trim / Package</label><input type="text" id="v-trim" placeholder="e.g. LE, XSE, Limited" oninput="buildCarsUrl()"/></div>
+      <div class="field"><label>Mileage</label><input type="number" id="v-miles" placeholder="e.g. 62000" oninput="buildCarsUrl()"/></div>
+      <div class="field"><label>Color</label><input type="text" id="v-color" placeholder="e.g. Silver" oninput="buildCarsUrl()"/></div>
+    </div>
+    <div class="field"><label>Additional description (options, condition before accident)</label>
+      <textarea id="v-desc" placeholder="e.g. One owner, no prior accidents, leather interior, sunroof, backup camera, new tires 6 months ago, excellent condition before crash..." oninput="buildCarsUrl()"></textarea>
+    </div>
+    <div class="field"><label>Pre-accident condition</label>
+      <select id="v-condition" onchange="buildCarsUrl()">
+        <option>Excellent — no issues, well maintained</option>
+        <option>Good — minor wear, regular maintenance</option>
+        <option>Fair — some minor issues but functional</option>
+        <option>Poor — existing issues before accident</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Current Damage Assessment</span>
+    <div class="grid-2">
+      <div class="field"><label>Insurance declared total loss?</label>
+        <select id="v-totaled">
+          <option value="yes">Yes — declared total loss</option>
+          <option value="no">No — repairable damage</option>
+          <option value="unknown">Unknown / pending assessment</option>
+        </select>
+      </div>
+      <div class="field"><label>Repair estimate (if known)</label><input type="number" id="v-repair" placeholder="$0"/></div>
+    </div>
+    <div class="field"><label>Describe the damage</label>
+      <textarea id="v-damage" placeholder="e.g. Rear bumper destroyed, trunk crushed, frame damage per body shop, airbags deployed, engine damage noted — shop called it a total loss..."></textarea>
+    </div>
+    <div class="field"><label>Do you have a loan on the vehicle?</label>
+      <select id="v-loan">
+        <option>No — owned outright</option>
+        <option>Yes — amount owed is less than car value</option>
+        <option>Yes — underwater (owe more than car is worth)</option>
+        <option>Leased vehicle</option>
+      </select>
+    </div>
+    <div class="field"><label>Days without a vehicle / rental car used</label><input type="number" id="v-rental-days" placeholder="0" oninput="calcRental()"/></div>
+  </div>
+
+  <div id="car-preview" class="car-preview" style="display:none;">
+    <h3 id="cp-title">Vehicle Summary</h3>
+    <div class="car-spec"><span>Year / Make / Model</span><strong id="cp-ymm">—</strong></div>
+    <div class="car-spec"><span>Mileage</span><strong id="cp-miles">—</strong></div>
+    <div class="car-spec"><span>Condition (pre-accident)</span><strong id="cp-cond">—</strong></div>
+    <div class="car-spec"><span>Rental days accrued</span><strong id="cp-rental">0 days</strong></div>
+    <div class="car-spec"><span>Estimated rental cost</span><strong id="cp-rental-cost">$0</strong></div>
+  </div>
+
+  <div style="background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-top:1rem;">
+    <span class="eyebrow-label">Search Comparable Vehicles on Cars.com</span>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Use this to establish your car's Actual Cash Value (ACV) — the exact amount the insurer must pay. Pull 5–10 comparable listings and attach them to your demand letter.</p>
+    <a id="cars-link" href="#" target="_blank" class="cars-link">Search on Cars.com →</a>
+    <p style="font-size:11px;color:var(--muted);margin-top:.5rem;">Link opens a filtered search for your vehicle in the Chicago, IL market (zip 60601). Adjust if needed.</p>
+  </div>
+
+  <!-- MARKET VALUE ESTIMATOR -->
+  <div id="market-value-panel" style="display:none;" class="market-panel">
+    <h3>📊 Market Value Estimate — <span id="mvp-title">Your Vehicle</span></h3>
+    <p style="font-size:12px;color:#aaa;margin-bottom:1rem;">Representative Chicago-area listings for your vehicle. Screenshot these and include in your demand letter to counter any insurer lowball ACV offer.</p>
+    <div id="mvp-listings"></div>
+    <div class="market-avg">
+      <div><div class="market-avg-label">Estimated ACV (market average)</div><div style="font-size:11px;color:#888;margin-top:2px;">Based on comparable local listings</div></div>
+      <div class="market-avg-val" id="mvp-avg">—</div>
+    </div>
+    <p style="font-size:11px;color:#888;margin-top:.75rem;">⚠️ These are illustrative estimates based on your inputs. Always pull live listings from Cars.com for your actual demand letter. Click the button above to search.</p>
+  </div>
+
+  <div style="background:var(--red-light);border:1px solid #f0b0aa;border-radius:10px;padding:1.25rem;margin-top:1rem;">
+    <span class="eyebrow-label" style="color:var(--red-dark);">Total Loss Recovery — Know Your Rights</span>
+    <div style="font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;">
+      <div>✦ <strong style="color:var(--ink);">Actual Cash Value (ACV)</strong> — insurer must pay fair market value, not book value. Pull your own comps.</div>
+      <div>✦ <strong style="color:var(--ink);">Illinois Sales Tax</strong> — required to be included in total loss payouts under IL law.</div>
+      <div>✦ <strong style="color:var(--ink);">Title & Registration Fees</strong> — recoverable when replacing a totaled vehicle.</div>
+      <div>✦ <strong style="color:var(--ink);">Rental Car</strong> — you're entitled from the date of accident until settlement check clears.</div>
+      <div>✦ <strong style="color:var(--ink);">GAP Insurance</strong> — if you owe more than ACV, check your policy immediately. Without GAP you're liable for the difference.</div>
+      <div>✦ <strong style="color:var(--ink);">Personal Property</strong> — car seat, phone, sunglasses, etc. damaged in crash are recoverable.</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="showVehiclePreview();generateMarketValue();">Generate Vehicle Summary & Market Value</button>
+</div>
+</div>
+
+<!-- ===================== TAB 3: DAMAGES ===================== -->
+<div id="tab-damages" class="panel">
+<div class="container">
+  <div class="section-title">Damages Calculator & Fault Analysis</div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Comparative Negligence — 735 ILCS 5/2-1116</span>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:.75rem;">
+      <input type="range" id="fault-slider" min="0" max="100" value="0" step="5" oninput="updateFaultBar()" style="flex:1;"/>
+      <span id="fault-pct-display" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;min-width:36px;color:var(--ink);">0%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;"><span>Your fault</span><span>Defendant's fault</span></div>
+    <div class="fault-bar">
+      <div class="fault-fill-cli" id="fbar-cli" style="width:0%;"><span class="fault-label" id="fbar-cli-txt"></span></div>
+      <div class="fault-fill-def" id="fbar-def" style="width:100%;"><span class="fault-label" id="fbar-def-txt">100%</span></div>
+    </div>
+    <div id="fault-msg" class="alert alert-green" style="margin-top:.75rem;">Client can recover 100% of damages — 0% fault assigned.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Pain & Suffering Multiplier (Northwestern University Method)</span>
+    <div class="grid-4" style="margin-bottom:.5rem;">
+      <div class="metric-card" id="mult-btn-1" onclick="setMult(1.5,1)" style="cursor:pointer;border:2px solid var(--red);">
+        <div class="m-label">Minor injuries</div><div class="m-value">1.5×</div><div class="m-sub">Soft tissue, mild whiplash</div>
+      </div>
+      <div class="metric-card" id="mult-btn-2" onclick="setMult(2.5,2)" style="cursor:pointer;">
+        <div class="m-label">Moderate injuries</div><div class="m-value">2.5×</div><div class="m-sub">Fractures, severe whiplash</div>
+      </div>
+      <div class="metric-card" id="mult-btn-3" onclick="setMult(3.5,3)" style="cursor:pointer;">
+        <div class="m-label">Severe injuries</div><div class="m-value">3.5×</div><div class="m-sub">Surgery, long recovery</div>
+      </div>
+      <div class="metric-card" id="mult-btn-4" onclick="setMult(5,4)" style="cursor:pointer;">
+        <div class="m-label">Catastrophic</div><div class="m-value">5×</div><div class="m-sub">Paralysis, permanent TBI</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1rem;">
+    <div class="metric-card"><div class="m-label">Economic damages</div><div class="m-value" id="d-econ">$0</div><div class="m-sub">Medical + wages + other</div></div>
+    <div class="metric-card"><div class="m-label">Pain & suffering</div><div class="m-value" id="d-pain">$0</div><div class="m-sub">Multiplier applied</div></div>
+    <div class="metric-card"><div class="m-label">Gross total</div><div class="m-value" id="d-gross">$0</div><div class="m-sub">Before fault reduction</div></div>
+    <div class="metric-card" style="border:1.5px solid #a8d5b8;"><div class="m-label">Net recovery</div><div class="m-value" id="d-net" style="color:var(--green);">$0</div><div class="m-sub">After fault reduction</div></div>
+  </div>
+
+  <div class="card">
+    <span class="eyebrow-label">Negotiation Strategy Benchmarks</span>
+    <div class="grid-3" style="margin-bottom:.75rem;">
+      <div class="range-card low"><div class="r-label">First Demand</div><div class="r-value" id="strat-demand">$0</div><div class="r-desc">Open 2–2.5× your target</div></div>
+      <div class="range-card mid"><div class="r-label">Target Settlement</div><div class="r-value" id="strat-target">$0</div><div class="r-desc">Realistic negotiated figure</div></div>
+      <div class="range-card high"><div class="r-label">Trial Ceiling</div><div class="r-value" id="strat-trial">$0</div><div class="r-desc">Cook County jury potential</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);">Note: Victims with attorneys recover 3–3.5× more than self-represented claimants on average, even after contingency fees.</p>
+  </div>
+
+  <button class="btn-primary" onclick="updateFaultBar();calcAllDamages();">Recalculate All Damages</button>
+</div>
+</div>
+
+<!-- ===================== TAB 4: EVIDENCE ===================== -->
+<div id="tab-evidence" class="panel">
+<div class="container">
+  <div class="section-title">Evidence Collection Checklist</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Click each item as you collect it. Red items expire — act immediately.</p>
+  <div class="check-list" id="checklist"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:1rem;">
+    <span style="font-size:13px;color:var(--muted);">Progress: <strong id="check-n" style="color:var(--ink);">0</strong> / <span id="check-t">0</span> collected</span>
+    <div class="progress-track" style="flex:1;"><div class="progress-fill" id="check-fill" style="width:0%;"></div></div>
+  </div>
+  <button class="btn-primary" style="margin-top:1rem;" onclick="alert('Take this checklist to your attorney consultation. Missing items — especially dashcam footage and surveillance — must be preserved within 24-72 hours or they are gone forever.')">Get Missing Evidence Action Plan</button>
+</div>
+</div>
+
+<!-- ===================== TAB 5: DEADLINES ===================== -->
+<div id="tab-deadlines" class="panel">
+<div class="container">
+  <div class="section-title">Critical Legal Deadlines</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Illinois law is unforgiving. Missing a deadline can permanently extinguish your right to compensation.</p>
+  <div class="deadline-list">
+    <div class="deadline-item"><div class="d-dot d-red"></div><div class="d-body"><div class="d-title">Preserve dashcam & surveillance footage</div><div class="d-desc">Send written preservation letters to businesses & the at-fault driver's insurer. Footage is overwritten in 24–72 hours.</div><div class="d-when">⚡ Do this today</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-red"></div><div class="d-body"><div class="d-title">Seek medical attention & document injuries</div><div class="d-desc">Gaps in treatment are used by insurers to argue your injuries aren't serious. See a doctor now even if you feel OK.</div><div class="d-when">⚡ Within 24–48 hours</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-red"></div><div class="d-body"><div class="d-title">Do NOT give a recorded statement to the adverse insurer</div><div class="d-desc">You have no legal obligation to give one. Adjusters are trained to extract admissions that reduce your claim.</div><div class="d-when">⚡ Immediately — refuse all requests</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-amber"></div><div class="d-body"><div class="d-title">File police report (if not done)</div><div class="d-desc">Required under 625 ILCS 5/11-408 if injuries or damage exceed $1,500. Get the full narrative report, not just crash summary.</div><div class="d-when">Within days</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-amber"></div><div class="d-body"><div class="d-title">Notify your own insurance company</div><div class="d-desc">Most policies require prompt notice. Do not give recorded statements to your insurer either without attorney review.</div><div class="d-when">Within 1 week</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-amber"></div><div class="d-body"><div class="d-title">Retain a personal injury attorney</div><div class="d-desc">Attorneys recover 3–3.5× more than self-represented claimants. All top IL firms work on contingency — zero upfront cost.</div><div class="d-when">Within 30 days</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-green"></div><div class="d-body"><div class="d-title">File personal injury lawsuit</div><div class="d-desc">735 ILCS 5/13-202 — 2-year statute of limitations from the date of the accident. Missing this permanently bars your claim. For minors, tolled until age 18 then 2 years.</div><div class="d-when">2 years from accident date</div></div></div>
+    <div class="deadline-item"><div class="d-dot d-green"></div><div class="d-body"><div class="d-title">File property damage claim</div><div class="d-desc">Separate from personal injury. Includes vehicle total loss and personal property inside the vehicle.</div><div class="d-when">5 years from accident date</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== TAB 6: LAW ===================== -->
+<div id="tab-law" class="panel">
+<div class="container">
+  <div class="section-title">Illinois Law Quick Reference</div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Key Statutes</span>
+    <div class="statute-row">
+      <span class="statute-code">735 ILCS 5/2-1116</span>
+      <div><div class="statute-text">Modified comparative negligence — 51% bar rule</div><div class="statute-note">You can recover if ≤50% at fault. Damages reduced proportionally. 51%+ = no recovery.</div></div>
+    </div>
+    <div class="statute-row">
+      <span class="statute-code">735 ILCS 5/13-202</span>
+      <div><div class="statute-text">2-year statute of limitations — personal injury</div><div class="statute-note">Tolled for minors until age 18. Strict deadline — missing it eliminates your claim entirely.</div></div>
+    </div>
+    <div class="statute-row">
+      <span class="statute-code">625 ILCS 5/11-408</span>
+      <div><div class="statute-text">Duty to report accidents to police</div><div class="statute-note">Required when injuries occur or property damage exceeds $1,500.</div></div>
+    </div>
+    <div class="statute-row">
+      <span class="statute-code">625 ILCS 5/12-610.2</span>
+      <div><div class="statute-text">Texting while driving — illegal in Illinois</div><div class="statute-note">Subpoena cell phone records to prove distracted driving. Key for liability.</div></div>
+    </div>
+    <div class="statute-row">
+      <span class="statute-code">625 ILCS 5/3-707</span>
+      <div><div class="statute-text">Driving without insurance — Class A misdemeanor</div><div class="statute-note">If at-fault driver is uninsured, pursue your own UM/UIM coverage immediately.</div></div>
+    </div>
+    <div class="statute-row">
+      <span class="statute-code">755 ILCS 5/27-6</span>
+      <div><div class="statute-text">Illinois Survival Act — wrongful death claims</div><div class="statute-note">Estate can continue/initiate claims the deceased had accrued before death.</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">Illinois Minimum Insurance Requirements</span>
+    <div class="grid-4">
+      <div class="metric-card"><div class="m-label">Bodily injury / person</div><div class="m-value">$25K</div><div class="m-sub">Routinely exhausted in serious crashes</div></div>
+      <div class="metric-card"><div class="m-label">Bodily injury / accident</div><div class="m-value">$50K</div><div class="m-sub">All claimants combined</div></div>
+      <div class="metric-card"><div class="m-label">Property damage</div><div class="m-value">$20K</div><div class="m-sub">Vehicle and property</div></div>
+      <div class="metric-card"><div class="m-label">Truck / motor carrier</div><div class="m-value">$1M+</div><div class="m-sub">Federal minimum for commercial</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="eyebrow-label">IL Settlement Benchmarks (2022–2026)</span>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:2px solid var(--border);">
+          <th style="text-align:left;padding:.5rem;color:var(--muted);font-weight:500;">Injury Type</th>
+          <th style="text-align:right;padding:.5rem;color:var(--muted);font-weight:500;">Typical Range</th>
+          <th style="text-align:right;padding:.5rem;color:var(--muted);font-weight:500;">Notable IL Verdict</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">Minor (whiplash, soft tissue)</td><td style="text-align:right;padding:.5rem;">$10K – $30K</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$35,201 (2022)</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">Moderate (fractures, surgery)</td><td style="text-align:right;padding:.5rem;">$30K – $75K</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$50K (2023)</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">Severe (TBI, spinal, permanent)</td><td style="text-align:right;padding:.5rem;">$75K – $500K+</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$145K (2021)</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">Rear-end w/ shoulder surgery</td><td style="text-align:right;padding:.5rem;">$500K – $3M</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$2.56M Cook Co (2026)</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:.5rem;">Truck accident (spinal)</td><td style="text-align:right;padding:.5rem;">$1M – $15M</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$12M (2024)</td></tr>
+          <tr><td style="padding:.5rem;">Wrongful death (Cook County)</td><td style="text-align:right;padding:.5rem;">$1M – $22M+</td><td style="text-align:right;padding:.5rem;font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$22M Settlement (2026)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:.75rem;">Source: Illinois lawsuit-information-center.com verdict database, Rosenfeld Injury Lawyers, IL DOI. Median IL personal injury jury verdict: $26,624 (Jury Verdict Research).</p>
+  </div>
+</div>
+</div>
+
+<!-- ===================== TAB 7: FIRMS ===================== -->
+<div id="tab-firms" class="panel">
+<div class="container">
+  <div class="section-title">Top Chicago-Area Personal Injury Firms</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">All firms listed have recovered $100M+ in damages. All work on contingency — you pay nothing unless they win. All offer free consultations.</p>
+
+  <div class="firm-card">
+    <div class="firm-name">Power Rogers, LLP</div>
+    <div class="firm-meta">Founded 1993 · 12+ Super Lawyers · #1 in Dollars Recovered in Chicago 13 of last 15 years</div>
+    <div class="firm-total">$6 Billion+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $100M recovery in trucking scandal leading to 76 criminal convictions including former IL Governor. $55.4M — largest IL medical malpractice jury verdict in state history. Over 200 jury verdicts and settlements exceeding $1M each. Ranked #1 firm in Chicago by Chicago Lawyer magazine for dollars recovered.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorneys:</strong> Joseph A. Power Jr. &amp; Larry R. Rogers Sr. (founders); Larry R. Rogers Jr. (equity partner, 30+ yrs)</span>
+      <span><strong>Address:</strong> 70 W. Madison St., Suite 5500, Chicago, IL 60602</span>
+      <span><strong>Phone:</strong> (312) 236-9381</span>
+      <span><strong>Website:</strong> powerrogers.com</span>
+      <span><strong>Email:</strong> Contact via online form at powerrogers.com/contact</span>
+    </div>
+  </div>
+
+  <div class="firm-card">
+    <div class="firm-name">Clifford Law Offices</div>
+    <div class="firm-meta">Founded 1984 · 20+ trial attorneys · Only Chicago firm named National Law Journal Top 50 Elite Trial Lawyers</div>
+    <div class="firm-total">$5 Billion+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $101M verdict for a child with catastrophic birth injuries. $38.3M for a mother and two children in I-90 truck-car crash near Rockford. $25.9M verdict against Yellow Cab for permanent brain injury. $24.1M for an 8-year-old struck by a CTA bus in a school crosswalk. Lead counsel in the Ethiopian Airlines Boeing 737 MAX-8 crash litigation (2019) representing victims globally. Robert Clifford ranked #1 on 2026 Illinois Super Lawyers list and named to Forbes' 2025 America's Top Lawyers.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorney:</strong> Robert A. Clifford (founder, 40+ yrs experience)</span>
+      <span><strong>Address:</strong> 120 N. LaSalle St., Floor 36, Chicago, IL 60602</span>
+      <span><strong>Phone:</strong> (312) 899-9090</span>
+      <span><strong>Website:</strong> cliffordlaw.com</span>
+      <span><strong>Email:</strong> Contact via cliffordlaw.com/contact-us</span>
+    </div>
+  </div>
+
+  <div class="firm-card">
+    <div class="firm-name">Salvi, Schostok &amp; Pritchard P.C.</div>
+    <div class="firm-meta">Founded 1982 · 21 attorneys · 315+ cases resulting in $1M+ awards</div>
+    <div class="firm-total">$3 Billion+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $363M — largest personal injury verdict in Illinois history. $148M verdict for a dancer permanently paralyzed when a pedestrian shelter collapsed at O'Hare International Airport. $80M verdict in a separate catastrophic injury case. $33.2M Lake County record verdict for a drunk driving accident victim (2009). Routinely listed as top IL firm in Jury Verdict Reporter/Chicago Daily Law Bulletin annual settlement survey.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorney:</strong> Patrick A. Salvi (managing partner, est. 1982); Patrick A. Salvi II</span>
+      <span><strong>Address:</strong> 161 N. Clark St., Suite 4700, Chicago, IL 60601</span>
+      <span><strong>Phone:</strong> (312) 372-1227 · Toll-free: 1-800-SALVI-LAW</span>
+      <span><strong>Website:</strong> salvilaw.com</span>
+      <span><strong>Email:</strong> Contact via salvilaw.com/contact-us</span>
+    </div>
+  </div>
+
+  <div class="firm-card">
+    <div class="firm-name">Disparti Law Group Accident &amp; Injury Lawyers</div>
+    <div class="firm-meta">Chicago's largest injury law firm · Named One of Most Influential Law Firms in America · Answers 24/7</div>
+    <div class="firm-total">$2 Billion+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $9.0M verdict for a diesel locomotive mechanic injured by an oil leak. $6.6M verdict for a TSA worker injured when a Blue Line train derailed at O'Hare Airport. $1.1M verdict in a medical malpractice case. Attorney Amanda Martin: 20+ years experience; member IL Trial Lawyers Association and Women's Bar Association. Attorney Larry Disparti: Board of Managers, IL Trial Lawyers Association; Top 100 National Trial Lawyers; Million Dollar Advocates Club.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorneys:</strong> Larry Disparti (founder); Amanda Martin; Adam Shapiro</span>
+      <span><strong>Address:</strong> 121 W. Wacker Dr., Suite 1600, Chicago, IL 60601</span>
+      <span><strong>Phone:</strong> (312) 600-6000 (24/7)</span>
+      <span><strong>Website:</strong> dispartilaw.com</span>
+      <span><strong>Email:</strong> Contact via dispartilaw.com/contact-us</span>
+    </div>
+  </div>
+
+  <div class="firm-card">
+    <div class="firm-name">McNabola &amp; Associates</div>
+    <div class="firm-meta">98% success rate · Top IL trial lawyers · Aggressive plaintiff advocacy</div>
+    <div class="firm-total">$300 Million+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $9.7M trial verdict for a trucking accident victim. Filed landmark lawsuit against a vehicle manufacturer for defective keyless ignition design leading to a Chicago police officer's carbon monoxide death. Multiple $1M+ verdicts and settlements in car accident, medical malpractice, and catastrophic injury cases throughout Cook County. Handles complex rideshare, commercial vehicle, and multi-defendant cases.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorneys:</strong> Marc McNabola &amp; associates</span>
+      <span><strong>Address:</strong> 20 N. Clark St., Suite 1700, Chicago, IL 60602</span>
+      <span><strong>Phone:</strong> (312) 888-8000</span>
+      <span><strong>Website:</strong> personalinjurylawchicago.com</span>
+      <span><strong>Email:</strong> Contact via personalinjurylawchicago.com/contact</span>
+    </div>
+  </div>
+
+  <div class="firm-card">
+    <div class="firm-name">Phillips Law Offices</div>
+    <div class="firm-meta">76+ years combined experience · Top 100 Trial Lawyers nationally · America's Top 100 High Stakes Litigators® since 2017</div>
+    <div class="firm-total">$500 Million+ Recovered</div>
+    <div class="firm-cases">
+      Notable cases: $900,000 verdict for I-57 collision. $450,000 for Lake Shore Drive multi-vehicle accident. $1,045,923 from Allstate after insurer refused full policy limits — then lost at trial. Founder Stephen D. Phillips: 40+ years experience, IL Trial Lawyers Association leader, reputation for record-setting verdicts against large insurers who lowball claims. Handles catastrophic injury, wrongful death, and complex IL car accident litigation statewide.
+    </div>
+    <div class="firm-contact">
+      <span><strong>Lead Attorneys:</strong> Stephen D. Phillips (founder); Stephen J. Phillips; Michael J. Phillips; Terry M. Quinn</span>
+      <span><strong>Address:</strong> 161 N. Clark St., Suite 4925, Chicago, IL 60601</span>
+      <span><strong>Phone:</strong> (312) 346-4262</span>
+      <span><strong>Website:</strong> phillipslawoffices.com</span>
+      <span><strong>Email:</strong> Contact via phillipslawoffices.com/contact</span>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> Firm information is sourced from publicly available records, Yelp, Super Lawyers, Best Law Firms, and firm websites as of April 2026. Email addresses are contact form links as most major plaintiff firms do not publish direct email addresses to protect against spam. Recovery totals are as reported by each firm. Past results do not guarantee future outcomes. This tool provides general information only and does not constitute legal advice. Consult a licensed Illinois personal injury attorney for guidance specific to your situation.
+  </div>
+</div>
+</div>
+
+<!-- ===================== TAB: DOCUMENTS ===================== -->
+<div id="tab-docs" class="panel">
+<div class="container">
+  <div class="section-title">Upload Case Documents</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Upload your accident documents here. They are stored locally in your browser — nothing is sent to any server. All uploaded files will be included in your Full Report and available for attorney review.</p>
+
+  <!-- BULK DROP ZONE -->
+  <div class="upload-zone" id="bulk-drop" style="margin-bottom:1.5rem;" onclick="document.getElementById('bulk-file-input').click()">
+    <input type="file" id="bulk-file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.txt,.heic" onchange="handleBulkUpload(this.files)"/>
+    <div class="upload-icon">📂</div>
+    <div class="upload-label">Drop any files here or click to browse</div>
+    <div class="upload-hint">PDF, JPG, PNG, HEIC, DOC, DOCX · Multiple files supported · Stored locally in your browser</div>
+  </div>
+
+  <!-- DOCUMENT PROGRESS -->
+  <div class="doc-progress" style="margin-bottom:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;font-weight:600;color:var(--ink);">Document Collection Progress</span>
+      <span style="font-size:12px;color:var(--muted);"><span id="docs-uploaded-count">0</span> of <span id="docs-total-count">8</span> key categories uploaded</span>
+    </div>
+    <div class="doc-progress-bar-wrap"><div class="doc-progress-fill" id="docs-progress-fill" style="width:0%;"></div></div>
+    <div style="font-size:11px;color:var(--muted);">Upload all critical documents before your attorney consultation to maximize your recovery.</div>
+  </div>
+
+  <!-- CRITICAL DOCUMENTS -->
+  <div class="doc-category">
+    <div class="doc-cat-title">🚨 Critical Documents <span class="doc-cat-badge critical">Required</span></div>
+
+    <div class="doc-slot" id="slot-police">
+      <div class="doc-slot-icon">🚔</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Police Report</div>
+        <div class="doc-slot-hint">Full narrative report — not just the crash summary card. Request from the reporting department.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-police">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('police')">Upload</button>
+        <input type="file" class="hidden-input" id="file-police" accept=".pdf,.jpg,.jpeg,.png,.heic" onchange="handleSlotUpload('police',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-medical">
+      <div class="doc-slot-icon">🏥</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Medical Bills & Records</div>
+        <div class="doc-slot-hint">All providers — ER, specialists, physical therapy, pharmacy. Upload multiple files.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-medical">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('medical')">Upload</button>
+        <input type="file" class="hidden-input" id="file-medical" accept=".pdf,.jpg,.jpeg,.png,.heic" multiple onchange="handleSlotUpload('medical',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-photos">
+      <div class="doc-slot-icon">📷</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Accident Scene & Vehicle Photos</div>
+        <div class="doc-slot-hint">Scene, vehicle damage from all angles, skid marks, road conditions, signage.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-photos">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('photos')">Upload</button>
+        <input type="file" class="hidden-input" id="file-photos" accept=".jpg,.jpeg,.png,.gif,.webp,.heic" multiple onchange="handleSlotUpload('photos',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-injury-photos">
+      <div class="doc-slot-icon">🩹</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Injury Photos</div>
+        <div class="doc-slot-hint">Document all visible injuries from Day 1 through recovery — bruising, swelling, cuts, surgical scars.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-injury-photos">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('injury-photos')">Upload</button>
+        <input type="file" class="hidden-input" id="file-injury-photos" accept=".jpg,.jpeg,.png,.gif,.webp,.heic" multiple onchange="handleSlotUpload('injury-photos',this)"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEHICLE & PROPERTY DOCUMENTS -->
+  <div class="doc-category">
+    <div class="doc-cat-title">🚗 Vehicle & Property <span class="doc-cat-badge important">Important</span></div>
+
+    <div class="doc-slot" id="slot-repair">
+      <div class="doc-slot-icon">🔧</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Car Repair Estimate / Total Loss Declaration</div>
+        <div class="doc-slot-hint">Body shop estimate(s) or insurer's total loss letter with ACV offer. Get 2–3 independent estimates.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-repair">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('repair')">Upload</button>
+        <input type="file" class="hidden-input" id="file-repair" accept=".pdf,.jpg,.jpeg,.png,.heic" multiple onchange="handleSlotUpload('repair',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-rental">
+      <div class="doc-slot-icon">🚕</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Rental Car Receipts</div>
+        <div class="doc-slot-hint">Every rental receipt from accident date to settlement. Document every day and every dollar.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-rental">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('rental')">Upload</button>
+        <input type="file" class="hidden-input" id="file-rental" accept=".pdf,.jpg,.jpeg,.png,.heic" multiple onchange="handleSlotUpload('rental',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-insurance">
+      <div class="doc-slot-icon">📋</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Insurance Correspondence</div>
+        <div class="doc-slot-hint">Letters, emails, or settlement offers from the at-fault driver's insurer. Do NOT accept without attorney review.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-insurance">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('insurance')">Upload</button>
+        <input type="file" class="hidden-input" id="file-insurance" accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx" multiple onchange="handleSlotUpload('insurance',this)"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORTING DOCUMENTS -->
+  <div class="doc-category">
+    <div class="doc-cat-title">📂 Supporting Documents <span class="doc-cat-badge supporting">Helpful</span></div>
+
+    <div class="doc-slot" id="slot-wages">
+      <div class="doc-slot-icon">💼</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Lost Wage Documentation</div>
+        <div class="doc-slot-hint">Employer letter, pay stubs, tax returns for self-employed. Documents time missed from work.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-wages">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('wages')">Upload</button>
+        <input type="file" class="hidden-input" id="file-wages" accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx" multiple onchange="handleSlotUpload('wages',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-future-medical">
+      <div class="doc-slot-icon">📋</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Future Treatment Plan (Physician Letter)</div>
+        <div class="doc-slot-hint">Written physician opinion on future care needed. This converts your verbal estimate into a documented claim element.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-future-medical">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('future-medical')">Upload</button>
+        <input type="file" class="hidden-input" id="file-future-medical" accept=".pdf,.jpg,.jpeg,.png,.heic" onchange="handleSlotUpload('future-medical',this)"/>
+      </div>
+    </div>
+
+    <div class="doc-slot" id="slot-other">
+      <div class="doc-slot-icon">📎</div>
+      <div class="doc-slot-info">
+        <div class="doc-slot-name">Other Evidence (Dashcam, Witness Statements, etc.)</div>
+        <div class="doc-slot-hint">Any other supporting files — screenshots, witness statements, dashcam stills, social media captures.</div>
+      </div>
+      <div class="doc-slot-actions">
+        <span class="doc-slot-status empty" id="status-other">Not uploaded</span>
+        <button class="btn-upload-slot" onclick="triggerSlotUpload('other')">Upload</button>
+        <input type="file" class="hidden-input" id="file-other" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.doc,.docx,.txt" multiple onchange="handleSlotUpload('other',this)"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOADED FILES GALLERY -->
+  <div id="uploaded-gallery" style="display:none;margin-top:1rem;">
+    <div class="section-title" style="font-size:1rem;">Uploaded Files</div>
+    <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;"></div>
+  </div>
+
+  <div style="background:var(--amber-light);border:1px solid #e8c07a;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:12px;color:var(--amber);">
+    <strong>🔒 Privacy:</strong> All files are stored locally in your browser's memory only. Nothing is uploaded to any server. Files are cleared when you close or refresh the page. To keep your files, use <strong>📋 Full Report → Print/Save PDF</strong> which embeds a document index.
+  </div>
+</div>
+</div>
+
+<!-- ===================== DOCUMENT VIEWER MODAL ===================== -->
+<div class="modal-overlay" id="doc-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Document Preview</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <span id="modal-file-info" style="font-size:12px;color:var(--muted);flex:1;"></span>
+      <button class="btn-outline" onclick="closeModal()">Close</button>
+      <a id="modal-download" href="#" download style="display:none;" class="btn-outline">⬇ Download</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB: FULL REPORT ===================== -->
+<div id="tab-report" class="panel">
+<div class="container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:.75rem;">
+    <div class="section-title" style="margin:0;border:none;padding:0;">Full Case Report — PDF Ready</div>
+  </div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem;">Complete the fields below, then click <strong>Generate Report</strong>. The full printable case file will appear — hit <strong>Print / Save PDF</strong> to save, email to an attorney, or print for your records.</p>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">🙋 Injured Party (You / Plaintiff)</span>
+    <div class="grid-2">
+      <div class="field"><label>Full Legal Name</label><input type="text" id="r-victim-name" placeholder="e.g. Maria Gonzalez"/></div>
+      <div class="field"><label>Date of Birth</label><input type="date" id="r-victim-dob"/></div>
+      <div class="field"><label>Phone Number</label><input type="tel" id="r-victim-phone" placeholder="(773) 555-0100"/></div>
+      <div class="field"><label>Email Address</label><input type="email" id="r-victim-email" placeholder="you@email.com"/></div>
+    </div>
+    <div class="field"><label>Home Address</label><input type="text" id="r-victim-address" placeholder="123 Main St, Chicago, IL 60601"/></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">🚨 At-Fault Party (Defendant)</span>
+    <div class="grid-2">
+      <div class="field"><label>Full Name</label><input type="text" id="r-atfault-name" placeholder="e.g. John Smith"/></div>
+      <div class="field"><label>Driver's License #</label><input type="text" id="r-atfault-license" placeholder="Illinois DL number"/></div>
+      <div class="field"><label>Phone Number</label><input type="tel" id="r-atfault-phone" placeholder="(312) 555-0100"/></div>
+      <div class="field"><label>Address</label><input type="text" id="r-atfault-address" placeholder="456 Oak Ave, Chicago, IL"/></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">🚔 Police Report Details</span>
+    <div class="grid-2">
+      <div class="field"><label>Police Report Number</label><input type="text" id="r-police-report" placeholder="e.g. RD# JB-123456"/></div>
+      <div class="field"><label>Police District</label><input type="text" id="r-police-district" placeholder="e.g. 14th District — Shakespeare"/></div>
+    </div>
+    <div class="field"><label>Department / Agency</label><input type="text" id="r-police-dept" placeholder="e.g. Chicago Police Department, Cook County Sheriff"/></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">🚘 Defendant's Vehicle</span>
+    <div class="grid-2">
+      <div class="field"><label>Year</label><input type="number" id="r-afv-year" placeholder="e.g. 2020"/></div>
+      <div class="field"><label>Make</label><input type="text" id="r-afv-make" placeholder="e.g. Ford"/></div>
+      <div class="field"><label>Model</label><input type="text" id="r-afv-model" placeholder="e.g. F-150"/></div>
+      <div class="field"><label>Color</label><input type="text" id="r-afv-color" placeholder="e.g. Black"/></div>
+      <div class="field"><label>License Plate #</label><input type="text" id="r-afv-plate" placeholder="Illinois plate or state"/></div>
+    </div>
+    <div class="field"><label>Additional notes (damage, commercial vehicle, rideshare, etc.)</label><textarea id="r-afv-desc" placeholder="e.g. Commercial delivery truck, rear bumper had prior damage, Uber vehicle..."></textarea></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <span class="eyebrow-label">🏥 Medical Bills — Itemized</span>
+    <div class="field"><label>Hospital / Facility Name</label><input type="text" id="r-hospital" placeholder="e.g. Northwestern Memorial Hospital"/></div>
+    <div class="grid-2">
+      <div class="field"><label>ER / Hospital Bill ($)</label><input type="number" id="r-er-bill" placeholder="0"/></div>
+      <div class="field"><label>ER Admission Date / Notes</label><input type="text" id="r-er" placeholder="e.g. April 14, 2025 — admitted via ambulance"/></div>
+      <div class="field"><label>Specialist / Physician Bill ($)</label><input type="number" id="r-spec-bill" placeholder="0"/></div>
+      <div class="field"><label>Specialist Name / Specialty</label><input type="text" id="r-specialist" placeholder="e.g. Dr. Chen — Orthopedic Surgeon"/></div>
+      <div class="field"><label>Physical Therapy / Chiro Bill ($)</label><input type="number" id="r-pt-bill" placeholder="0"/></div>
+      <div class="field"><label>PT / Chiro Provider</label><input type="text" id="r-pt" placeholder="e.g. ActiveCare Physical Therapy, Skokie"/></div>
+      <div class="field"><label>Pharmacy / Medications ($)</label><input type="number" id="r-pharmacy" placeholder="0"/></div>
+      <div class="field"><label>Other Medical ($)</label><input type="number" id="r-other-med" placeholder="0"/></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+    <button class="btn-primary" style="flex:1;min-width:200px;" onclick="generateReport();setTimeout(()=>document.getElementById('report-output').scrollIntoView({behavior:'smooth'}),100);">⚖️ Generate Full Report</button>
+    <button class="btn-outline" id="pdf-print-btn" onclick="window.print()" style="padding:12px 24px;">🖨️ Print / Save PDF</button>
+  </div>
+
+  <div id="report-output">
+    <div style="text-align:center;padding:3rem;color:var(--muted);font-size:14px;background:var(--cream);border-radius:10px;border:1px dashed var(--border);">
+      ⚖️ Fill in the fields above and complete the <strong>Accident Details</strong> tab, then click <strong>Generate Full Report</strong>.<br/><br/>
+      Your complete PDF-ready case file will appear here — including both parties, both vehicles, police report #, medical bills, damages analysis, and full attorney profiles with achievements.
+    </div>
+  </div>
+</div>
+</div>
+
+<style>
+@media print {
+  .masthead, .tabs, .btn-primary, .btn-outline, #report-output > div:last-child button { display: none !important; }
+  body { background: white; font-size: 12px; }
+  .panel { display: block !important; }
+  #tab-report { display: block !important; }
+  #tab-intake, #tab-vehicle, #tab-damages, #tab-evidence, #tab-deadlines, #tab-law, #tab-firms { display: none !important; }
+  .container { padding: 0; max-width: 100%; }
+  .report-section { page-break-inside: avoid; }
+}
+.report-header { background: var(--ink); color: var(--paper); border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; }
+.report-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; margin-bottom: .25rem; }
+.report-header .rh-sub { font-size: 12px; color: #aaa; }
+.report-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+.report-section h3 { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.report-row { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; padding: .35rem 0; border-bottom: 1px solid var(--border); }
+.report-row:last-child { border-bottom: none; }
+.report-row .r-key { color: var(--muted); flex: 1; }
+.report-row .r-val { font-weight: 500; color: var(--ink); text-align: right; max-width: 60%; }
+.report-highlight { background: var(--ink); color: var(--paper); border-radius: 8px; padding: 1rem 1.25rem; margin-top: .75rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: .75rem; }
+.rh-stat .rhs-val { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; }
+.rh-stat .rhs-lbl { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; }
+.report-action { background: var(--red-light); border: 1px solid #f0b0aa; border-radius: 8px; padding: .75rem 1rem; font-size: 13px; color: var(--red-dark); margin-bottom: 6px; }
+.report-action strong { display: block; margin-bottom: 2px; }
+</style>
+
+<script>
+// ===== TABS =====
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+// ===== FORMATTERS =====
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+function fmtRange(lo, hi) { return fmt(lo) + ' – ' + fmt(hi); }
+
+// ===== RANGE MAPS =====
+const ranges = {
+  minor:       [[10000,30000],[18000,35000],[35000,75000]],
+  moderate:    [[30000,75000],[60000,150000],[100000,400000]],
+  severe:      [[75000,200000],[150000,500000],[400000,2000000]],
+  catastrophic:[[500000,2000000],[1000000,5000000],[2000000,15000000]],
+  wrongful:    [[500000,2000000],[1000000,7000000],[5000000,22000000]],
+};
+const multMap = { minor:1.5, moderate:2.5, severe:3.5, catastrophic:5, wrongful:5 };
+let currentMult = 1.5;
+
+// ===== CALC DAMAGES =====
+function calcDamages() {
+  const sev = document.getElementById('q-severity').value;
+  const med = parseFloat(document.getElementById('q-med').value)||0;
+  const fut = parseFloat(document.getElementById('q-futmed').value)||0;
+  const wag = parseFloat(document.getElementById('q-wages').value)||0;
+  const oth = parseFloat(document.getElementById('q-other').value)||0;
+  const fault = parseInt(document.getElementById('q-fault').value)||0;
+  const mult = multMap[sev];
+  const econ = med + fut + wag + oth;
+  const pain = econ * mult;
+  const gross = econ + pain;
+  const net = gross * (1 - fault/100);
+  const r = ranges[sev];
+  document.getElementById('sum-econ').textContent = fmt(econ);
+  document.getElementById('sum-pain').textContent = fmt(pain);
+  document.getElementById('sum-gross').textContent = fmt(gross);
+  document.getElementById('sum-net').textContent = fmt(net);
+  document.getElementById('est-low').textContent = fmtRange(r[0][0], r[0][1]);
+  document.getElementById('est-mid').textContent = fmtRange(r[1][0], r[1][1]);
+  document.getElementById('est-high').textContent = fmt(r[2][0]) + '+';
+  const fa = document.getElementById('fault-alert');
+  if(fault <= 50) {
+    fa.className = 'alert alert-green';
+    fa.textContent = `You can recover. Damages reduced by ${fault}% — net recovery: ${fmt(net)}.`;
+  } else {
+    fa.className = 'alert alert-red';
+    fa.textContent = `At ${fault}% fault you are barred from recovery under 735 ILCS 5/2-1116. Fault must be ≤50%.`;
+  }
+  syncDamagesTab(econ, pain, gross, net, sev);
+}
+
+function syncDamagesTab(econ, pain, gross, net, sev) {
+  document.getElementById('d-econ').textContent = fmt(econ);
+  document.getElementById('d-pain').textContent = fmt(pain);
+  document.getElementById('d-gross').textContent = fmt(gross);
+  document.getElementById('d-net').textContent = fmt(net);
+  document.getElementById('strat-demand').textContent = fmt(gross * 2.2);
+  document.getElementById('strat-target').textContent = fmt(net * 1.1);
+  document.getElementById('strat-trial').textContent = fmt(net * 1.5);
+}
+
+// ===== FAULT BAR (Damages tab) =====
+function updateFaultBar() {
+  const f = parseInt(document.getElementById('fault-slider').value);
+  const d = 100 - f;
+  document.getElementById('fault-pct-display').textContent = f + '%';
+  document.getElementById('fbar-cli').style.width = f + '%';
+  document.getElementById('fbar-cli-txt').textContent = f > 5 ? f + '%' : '';
+  document.getElementById('fbar-def').style.width = d + '%';
+  document.getElementById('fbar-def-txt').textContent = d > 5 ? d + '%' : '';
+  const msg = document.getElementById('fault-msg');
+  if(f <= 50) {
+    msg.className = 'alert alert-green';
+    msg.textContent = `Can recover. Damages reduced by ${f}% — you keep ${d}% of award.`;
+  } else {
+    msg.className = 'alert alert-red';
+    msg.textContent = `Barred from recovery under 735 ILCS 5/2-1116. Fault must be ≤50%.`;
+  }
+  calcAllDamages();
+}
+
+function calcAllDamages() {
+  const med = parseFloat(document.getElementById('q-med').value)||0;
+  const fut = parseFloat(document.getElementById('q-futmed').value)||0;
+  const wag = parseFloat(document.getElementById('q-wages').value)||0;
+  const oth = parseFloat(document.getElementById('q-other').value)||0;
+  const fault = parseInt(document.getElementById('fault-slider').value)||0;
+  const econ = med + fut + wag + oth;
+  const pain = econ * currentMult;
+  const gross = econ + pain;
+  const net = gross * (1 - fault/100);
+  const sev = document.getElementById('q-severity').value;
+  syncDamagesTab(econ, pain, gross, net, sev);
+}
+
+// ===== MULTIPLIER BUTTONS =====
+function setMult(v, n) {
+  currentMult = v;
+  for(let i=1;i<=4;i++) {
+    document.getElementById('mult-btn-'+i).style.border = i===n ? '2px solid var(--red)' : '';
+  }
+  calcAllDamages();
+}
+
+// ===== EVIDENCE CHECKLIST =====
+const evidenceItems = [
+  {text:'Police report (full narrative, not just crash summary)',note:'Establishes official fault record — obtain from reporting department.',urgent:true},
+  {text:'Photos of accident scene & all vehicles',note:'Multiple angles, close-up damage, skid marks, signage, road conditions.',urgent:true},
+  {text:'Photos of all injuries',note:'Day 1 through full recovery. Visible bruising, swelling, cuts.',urgent:true},
+  {text:'Medical records & bills — all providers',note:'ER, specialists, physical therapy, pharmacy, chiropractor.',urgent:false},
+  {text:'Physician\'s written future treatment plan',note:'Get the $$ estimate in a formal written opinion, not just verbal.',urgent:false},
+  {text:'Lost wage documentation',note:'Employer letter, pay stubs, tax returns for self-employed.',urgent:false},
+  {text:'Witness names & contact information',note:'Get statements as soon as possible while memory is fresh.',urgent:true},
+  {text:'Dashcam footage (your vehicle)',note:'Preserve immediately — do not overwrite or reformat the SD card.',urgent:true},
+  {text:'Dashcam footage (at-fault vehicle)',note:'Send preservation demand letter to their insurer within 48 hours.',urgent:true},
+  {text:'Surveillance & traffic camera footage',note:'Request from businesses & municipality within 30 days — often overwritten.',urgent:true},
+  {text:'Cell phone records (at-fault driver)',note:'Distracted driving — requires subpoena. Request through attorney.',urgent:false},
+  {text:'Black box / EDR data (at-fault vehicle)',note:'Records speed, braking, steering at impact. Subpoena quickly.',urgent:true},
+  {text:'At-fault driver\'s insurance policy & limits',note:'Policy limits determine your maximum recovery without litigation.',urgent:false},
+  {text:'Your own UM/UIM coverage details',note:'Protects you if at-fault driver is uninsured or underinsured.',urgent:false},
+  {text:'Social media posts by at-fault driver',note:'Preserve screenshots immediately — admissions, behavior patterns.',urgent:false},
+  {text:'Prior accident history of at-fault driver',note:'Pattern of negligence strengthens punitive/aggravated claims.',urgent:false},
+  {text:'Repair estimate / total loss declaration',note:'Get 2–3 independent shop estimates. Do not accept insurer\'s first offer.',urgent:false},
+  {text:'Rental car receipts',note:'Document every day and every dollar from accident to settlement.',urgent:false},
+  {text:'Pain/recovery journal',note:'Daily log of pain levels, limitations, sleep disruption, emotional distress.',urgent:false},
+];
+
+const checked = new Set();
+const cl = document.getElementById('checklist');
+document.getElementById('check-t').textContent = evidenceItems.length;
+
+evidenceItems.forEach((item,i) => {
+  const el = document.createElement('div');
+  el.className = 'check-item';
+  el.innerHTML = `
+    <div class="check-box"><span class="check-mark">✓</span></div>
+    <div style="flex:1;">
+      <div class="check-text">${item.urgent?'<span style="color:var(--red);font-size:10px;font-weight:700;margin-right:6px;">URGENT</span>':''}${item.text}</div>
+      <div class="check-note">${item.note}</div>
+    </div>`;
+  el.onclick = () => {
+    if(checked.has(i)){checked.delete(i);el.classList.remove('done');}
+    else{checked.add(i);el.classList.add('done');}
+    const n=checked.size, t=evidenceItems.length;
+    document.getElementById('check-n').textContent=n;
+    document.getElementById('check-fill').style.width=Math.round(n/t*100)+'%';
+  };
+  cl.appendChild(el);
+});
+
+// ===== VEHICLE & CARS.COM =====
+function buildCarsUrl() {
+  const yr = document.getElementById('v-year').value;
+  const mk = document.getElementById('v-make').value;
+  const mo = document.getElementById('v-model').value;
+  const mi = document.getElementById('v-miles').value;
+  if(!mk && !mo) return;
+  const q = [yr, mk, mo].filter(Boolean).join(' ');
+  const url = `https://www.cars.com/shopping/results/?dealer_id=&keyword=${encodeURIComponent(q)}&list_price_max=&list_price_min=&make_slug=${encodeURIComponent(mk.toLowerCase())}&maximum_distance=50&mileage_max=${mi||100000}&model_slug=${encodeURIComponent(mo.toLowerCase())}&page_size=20&sort=list_price_asc&stock_type=used&year_max=${yr||''}&year_min=${yr||''}&zip=60601`;
+  document.getElementById('cars-link').href = url;
+  document.getElementById('cars-link').textContent = `Search ${[yr,mk,mo].filter(Boolean).join(' ')} on Cars.com →`;
+}
+
+function calcRental() {
+  const days = parseInt(document.getElementById('v-rental-days').value)||0;
+  const cost = days * 45;
+  document.getElementById('cp-rental').textContent = days + ' days';
+  document.getElementById('cp-rental-cost').textContent = fmt(cost) + ' est.';
+}
+
+function showVehiclePreview() {
+  const yr = document.getElementById('v-year').value;
+  const mk = document.getElementById('v-make').value;
+  const mo = document.getElementById('v-model').value;
+  const mi = document.getElementById('v-miles').value;
+  const cond = document.getElementById('v-condition').value;
+  if(!mk && !mo){alert('Please enter at least the vehicle make and model.');return;}
+  document.getElementById('car-preview').style.display='block';
+  document.getElementById('cp-title').textContent = [yr,mk,mo].filter(Boolean).join(' ') + ' — Vehicle Summary';
+  document.getElementById('cp-ymm').textContent = [yr,mk,mo].filter(Boolean).join(' ') || '—';
+  document.getElementById('cp-miles').textContent = mi ? parseInt(mi).toLocaleString() + ' miles' : '—';
+  document.getElementById('cp-cond').textContent = cond;
+  calcRental();
+  buildCarsUrl();
+  document.getElementById('car-preview').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ===== GENERATE FULL PDF-QUALITY REPORT =====
+function generateReport() {
+  // Gather all inputs
+  const accType   = document.getElementById('q-type').value;
+  const county    = document.getElementById('q-county').value;
+  const date      = document.getElementById('q-date').value;
+  const location  = document.getElementById('q-location').value;
+  const desc      = document.getElementById('q-desc').value;
+  const police    = document.getElementById('q-police').value;
+  const faultPct  = document.getElementById('q-fault').value;
+  const insurer   = document.getElementById('q-insurer').value;
+  const limits    = document.getElementById('q-limits').value;
+  const severity  = document.getElementById('q-severity').value;
+  const treatment = document.getElementById('q-treatment').value;
+  const injuries  = document.getElementById('q-injuries').value;
+  const med       = parseFloat(document.getElementById('q-med').value)||0;
+  const fut       = parseFloat(document.getElementById('q-futmed').value)||0;
+  const wag       = parseFloat(document.getElementById('q-wages').value)||0;
+  const oth       = parseFloat(document.getElementById('q-other').value)||0;
+  const fault     = parseInt(faultPct)||0;
+  const econ      = med + fut + wag + oth;
+  const pain      = econ * currentMult;
+  const gross     = econ + pain;
+  const net       = gross * (1 - fault/100);
+  const r         = ranges[severity];
+  const rentalDays= parseInt(document.getElementById('v-rental-days').value)||0;
+  const rentalCost= rentalDays * 45;
+  const netTotal  = net + rentalCost * (1 - fault/100);
+  const faultOk   = fault <= 50;
+
+  // Victim info
+  const victimName    = document.getElementById('r-victim-name').value;
+  const victimDOB     = document.getElementById('r-victim-dob').value;
+  const victimPhone   = document.getElementById('r-victim-phone').value;
+  const victimEmail   = document.getElementById('r-victim-email').value;
+  const victimAddress = document.getElementById('r-victim-address').value;
+  // At-fault party
+  const atFaultName    = document.getElementById('r-atfault-name').value;
+  const atFaultPhone   = document.getElementById('r-atfault-phone').value;
+  const atFaultAddress = document.getElementById('r-atfault-address').value;
+  const atFaultLicense = document.getElementById('r-atfault-license').value;
+  // Police details
+  const policeReport   = document.getElementById('r-police-report').value;
+  const policeDistrict = document.getElementById('r-police-district').value;
+  const policeDept     = document.getElementById('r-police-dept').value;
+  // Victim vehicle
+  const vYear  = document.getElementById('v-year').value;
+  const vMake  = document.getElementById('v-make').value;
+  const vModel = document.getElementById('v-model').value;
+  const vTrim  = document.getElementById('v-trim').value;
+  const vColor = document.getElementById('v-color').value;
+  const vMiles = document.getElementById('v-miles').value;
+  const vCond  = document.getElementById('v-condition').value;
+  const vTotaled = document.getElementById('v-totaled').value;
+  const vDamage  = document.getElementById('v-damage').value;
+  const vLoan    = document.getElementById('v-loan').value;
+  const vRepair  = document.getElementById('v-repair').value;
+  // At-fault vehicle
+  const afvYear  = document.getElementById('r-afv-year').value;
+  const afvMake  = document.getElementById('r-afv-make').value;
+  const afvModel = document.getElementById('r-afv-model').value;
+  const afvColor = document.getElementById('r-afv-color').value;
+  const afvPlate = document.getElementById('r-afv-plate').value;
+  const afvDesc  = document.getElementById('r-afv-desc').value;
+  // Medical
+  const hospital    = document.getElementById('r-hospital').value;
+  const er          = document.getElementById('r-er').value;
+  const erBill      = parseFloat(document.getElementById('r-er-bill').value)||0;
+  const specialist  = document.getElementById('r-specialist').value;
+  const specBill    = parseFloat(document.getElementById('r-spec-bill').value)||0;
+  const pt          = document.getElementById('r-pt').value;
+  const ptBill      = parseFloat(document.getElementById('r-pt-bill').value)||0;
+  const pharmacy    = parseFloat(document.getElementById('r-pharmacy').value)||0;
+  const otherMed    = parseFloat(document.getElementById('r-other-med').value)||0;
+
+  const dateStr    = date ? new Date(date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : 'Not specified';
+  const victimDOBStr = victimDOB ? new Date(victimDOB+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  const carsUrl    = document.getElementById('cars-link').href;
+  const now        = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const sevLabels  = { minor:'Minor (soft tissue, whiplash)', moderate:'Moderate (fractures, severe whiplash)', severe:'Severe (TBI, spinal cord, permanent injury)', catastrophic:'Catastrophic (paralysis, permanent disability)', wrongful:'Wrongful death' };
+  const totalMedBills = erBill + specBill + ptBill + pharmacy + otherMed;
+
+  document.getElementById('report-output').innerHTML = `
+
+  <!-- ===== PDF PRINT WRAPPER ===== -->
+  <div id="pdf-content">
+
+  <!-- COVER PAGE -->
+  <div class="pdf-cover">
+    <div class="pdf-cover-seal">⚖</div>
+    <div class="pdf-cover-eyebrow">Confidential — Attorney Work Product</div>
+    <div class="pdf-cover-title">Illinois Car Accident<br/>Case Report</div>
+    <div class="pdf-cover-sub">Prepared under Illinois Personal Injury Law Framework</div>
+    <div class="pdf-cover-meta">
+      <div class="pdf-cover-meta-row"><span>Prepared:</span><strong>${now}</strong></div>
+      <div class="pdf-cover-meta-row"><span>Venue:</span><strong>${county}</strong></div>
+      <div class="pdf-cover-meta-row"><span>Collision Type:</span><strong>${accType}</strong></div>
+      <div class="pdf-cover-meta-row"><span>Accident Date:</span><strong>${dateStr}</strong></div>
+      ${victimName ? `<div class="pdf-cover-meta-row"><span>Claimant:</span><strong>${victimName}</strong></div>` : ''}
+    </div>
+    <div class="pdf-cover-disclaimer">This document is prepared for strategic planning and attorney consultation purposes only. It does not constitute legal advice.</div>
+  </div>
+  <div class="pdf-page-break"></div>
+
+  <!-- SECTION 1: PARTIES -->
+  <div class="pdf-section-header"><span class="pdf-section-num">01</span>Parties Involved</div>
+
+  <div class="pdf-two-col">
+    <div>
+      <div class="pdf-subsection-title">🙋 Injured Party (Plaintiff / Claimant)</div>
+      <div class="pdf-field-block">
+        <div class="pdf-field"><span class="pdf-field-label">Full Name</span><span class="pdf-field-val">${victimName||'<em style="color:#aaa;">Not provided</em>'}</span></div>
+        ${victimDOBStr ? `<div class="pdf-field"><span class="pdf-field-label">Date of Birth</span><span class="pdf-field-val">${victimDOBStr}</span></div>` : ''}
+        ${victimPhone ? `<div class="pdf-field"><span class="pdf-field-label">Phone</span><span class="pdf-field-val">${victimPhone}</span></div>` : ''}
+        ${victimEmail ? `<div class="pdf-field"><span class="pdf-field-label">Email</span><span class="pdf-field-val">${victimEmail}</span></div>` : ''}
+        ${victimAddress ? `<div class="pdf-field"><span class="pdf-field-label">Address</span><span class="pdf-field-val">${victimAddress}</span></div>` : ''}
+      </div>
+    </div>
+    <div>
+      <div class="pdf-subsection-title">🚨 At-Fault Party (Defendant)</div>
+      <div class="pdf-field-block">
+        <div class="pdf-field"><span class="pdf-field-label">Full Name</span><span class="pdf-field-val">${atFaultName||'<em style="color:#aaa;">Not provided</em>'}</span></div>
+        ${atFaultPhone ? `<div class="pdf-field"><span class="pdf-field-label">Phone</span><span class="pdf-field-val">${atFaultPhone}</span></div>` : ''}
+        ${atFaultAddress ? `<div class="pdf-field"><span class="pdf-field-label">Address</span><span class="pdf-field-val">${atFaultAddress}</span></div>` : ''}
+        ${atFaultLicense ? `<div class="pdf-field"><span class="pdf-field-label">Driver's License</span><span class="pdf-field-val">${atFaultLicense}</span></div>` : ''}
+        <div class="pdf-field"><span class="pdf-field-label">Insurance Carrier</span><span class="pdf-field-val">${insurer||'Unknown'}</span></div>
+        <div class="pdf-field"><span class="pdf-field-label">Policy Limits</span><span class="pdf-field-val">${limits}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ACCIDENT -->
+  <div class="pdf-section-header"><span class="pdf-section-num">02</span>Accident Details</div>
+  <div class="pdf-field-block">
+    <div class="pdf-field"><span class="pdf-field-label">Date of Accident</span><span class="pdf-field-val">${dateStr}</span></div>
+    <div class="pdf-field"><span class="pdf-field-label">Type of Collision</span><span class="pdf-field-val">${accType}</span></div>
+    <div class="pdf-field"><span class="pdf-field-label">County / Venue</span><span class="pdf-field-val">${county}</span></div>
+    ${location ? `<div class="pdf-field"><span class="pdf-field-label">Location / Intersection</span><span class="pdf-field-val">${location}</span></div>` : ''}
+    <div class="pdf-field"><span class="pdf-field-label">Police Report Status</span><span class="pdf-field-val">${police}</span></div>
+    ${policeReport ? `<div class="pdf-field"><span class="pdf-field-label">Police Report #</span><span class="pdf-field-val" style="font-family:monospace;font-weight:700;">${policeReport}</span></div>` : ''}
+    ${policeDistrict ? `<div class="pdf-field"><span class="pdf-field-label">Police District</span><span class="pdf-field-val">${policeDistrict}</span></div>` : ''}
+    ${policeDept ? `<div class="pdf-field"><span class="pdf-field-label">Police Department</span><span class="pdf-field-val">${policeDept}</span></div>` : ''}
+  </div>
+  ${desc ? `<div class="pdf-narrative"><strong>Accident Description:</strong> ${desc}</div>` : ''}
+
+  <!-- SECTION 3: VEHICLES -->
+  <div class="pdf-section-header"><span class="pdf-section-num">03</span>Vehicle Descriptions</div>
+  <div class="pdf-two-col">
+    <div>
+      <div class="pdf-subsection-title">🚗 Plaintiff's Vehicle</div>
+      <div class="pdf-field-block">
+        <div class="pdf-field"><span class="pdf-field-label">Year / Make / Model</span><span class="pdf-field-val">${[vYear,vMake,vModel].filter(Boolean).join(' ')||'—'}</span></div>
+        ${vTrim ? `<div class="pdf-field"><span class="pdf-field-label">Trim / Package</span><span class="pdf-field-val">${vTrim}</span></div>` : ''}
+        ${vColor ? `<div class="pdf-field"><span class="pdf-field-label">Color</span><span class="pdf-field-val">${vColor}</span></div>` : ''}
+        ${vMiles ? `<div class="pdf-field"><span class="pdf-field-label">Mileage</span><span class="pdf-field-val">${parseInt(vMiles).toLocaleString()} miles</span></div>` : ''}
+        <div class="pdf-field"><span class="pdf-field-label">Pre-Accident Condition</span><span class="pdf-field-val">${vCond}</span></div>
+        <div class="pdf-field"><span class="pdf-field-label">Total Loss Status</span><span class="pdf-field-val" style="${vTotaled==='yes'?'color:#c0392b;font-weight:700;':''}">${vTotaled==='yes'?'DECLARED TOTAL LOSS':vTotaled==='no'?'Repairable damage':'Pending assessment'}</span></div>
+        ${vRepair ? `<div class="pdf-field"><span class="pdf-field-label">Repair Estimate</span><span class="pdf-field-val">$${parseFloat(vRepair).toLocaleString()}</span></div>` : ''}
+        <div class="pdf-field"><span class="pdf-field-label">Loan / Lease</span><span class="pdf-field-val">${vLoan}</span></div>
+        ${rentalDays > 0 ? `<div class="pdf-field"><span class="pdf-field-label">Rental Days Accrued</span><span class="pdf-field-val">${rentalDays} days (~${fmt(rentalCost)})</span></div>` : ''}
+      </div>
+      ${vDamage ? `<div class="pdf-narrative" style="margin-top:.5rem;"><strong>Damage description:</strong> ${vDamage}</div>` : ''}
+      ${(vMake||vModel) ? `<div style="margin-top:.5rem;font-size:12px;"><a href="${carsUrl}" target="_blank" style="color:#8b1a11;font-weight:600;">→ View comparable market listings on Cars.com</a></div>` : ''}
+    </div>
+    <div>
+      <div class="pdf-subsection-title">🚘 Defendant's Vehicle</div>
+      <div class="pdf-field-block">
+        <div class="pdf-field"><span class="pdf-field-label">Year / Make / Model</span><span class="pdf-field-val">${[afvYear,afvMake,afvModel].filter(Boolean).join(' ')||'—'}</span></div>
+        ${afvColor ? `<div class="pdf-field"><span class="pdf-field-label">Color</span><span class="pdf-field-val">${afvColor}</span></div>` : ''}
+        ${afvPlate ? `<div class="pdf-field"><span class="pdf-field-label">License Plate</span><span class="pdf-field-val" style="font-family:monospace;font-weight:700;">${afvPlate}</span></div>` : ''}
+        ${afvDesc ? `<div class="pdf-field"><span class="pdf-field-label">Additional Notes</span><span class="pdf-field-val">${afvDesc}</span></div>` : ''}
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: INJURIES & MEDICAL -->
+  <div class="pdf-section-header"><span class="pdf-section-num">04</span>Injuries & Medical Bills</div>
+  <div class="pdf-field-block" style="margin-bottom:1rem;">
+    <div class="pdf-field"><span class="pdf-field-label">Injury Severity</span><span class="pdf-field-val" style="font-weight:700;">${sevLabels[severity]||severity}</span></div>
+    <div class="pdf-field"><span class="pdf-field-label">Treatment Status</span><span class="pdf-field-val">${treatment}</span></div>
+  </div>
+  ${injuries ? `<div class="pdf-narrative" style="margin-bottom:1rem;"><strong>Injury Description:</strong> ${injuries}</div>` : ''}
+
+  <table class="pdf-table">
+    <thead><tr><th>Medical Provider / Service</th><th>Facility / Notes</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      ${hospital ? `<tr><td>Hospital / Emergency Room</td><td>${hospital}${er?' · '+er:''}</td><td style="text-align:right;">${fmt(erBill)}</td></tr>` : erBill>0 ? `<tr><td>Emergency Room</td><td>${er||'—'}</td><td style="text-align:right;">${fmt(erBill)}</td></tr>` : ''}
+      ${specBill>0 ? `<tr><td>Specialist / Physician</td><td>${specialist||'—'}</td><td style="text-align:right;">${fmt(specBill)}</td></tr>` : ''}
+      ${ptBill>0 ? `<tr><td>Physical Therapy / Chiropractic</td><td>${pt||'—'}</td><td style="text-align:right;">${fmt(ptBill)}</td></tr>` : ''}
+      ${pharmacy>0 ? `<tr><td>Pharmacy / Medications</td><td>—</td><td style="text-align:right;">${fmt(pharmacy)}</td></tr>` : ''}
+      ${otherMed>0 ? `<tr><td>Other Medical</td><td>—</td><td style="text-align:right;">${fmt(otherMed)}</td></tr>` : ''}
+      ${fut>0 ? `<tr><td>Future Medical (Projected)</td><td>Per physician's treatment plan</td><td style="text-align:right;">${fmt(fut)}</td></tr>` : ''}
+      <tr style="font-weight:700;background:#f5f0e8;"><td colspan="2">TOTAL MEDICAL DAMAGES</td><td style="text-align:right;">${fmt(Math.max(totalMedBills,med) + fut)}</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 5: DAMAGES -->
+  <div class="pdf-section-header"><span class="pdf-section-num">05</span>Damages Summary & Settlement Analysis</div>
+  <table class="pdf-table" style="margin-bottom:1rem;">
+    <thead><tr><th>Damage Category</th><th style="text-align:right;">Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Medical bills (current)</td><td style="text-align:right;">${fmt(med)}</td></tr>
+      <tr><td>Future medical (projected)</td><td style="text-align:right;">${fmt(fut)}</td></tr>
+      <tr><td>Lost wages</td><td style="text-align:right;">${fmt(wag)}</td></tr>
+      ${rentalDays>0 ? `<tr><td>Rental car (${rentalDays} days)</td><td style="text-align:right;">${fmt(rentalCost)}</td></tr>` : ''}
+      ${oth>0 ? `<tr><td>Other economic losses</td><td style="text-align:right;">${fmt(oth)}</td></tr>` : ''}
+      <tr style="font-weight:600;"><td>Total Economic Damages</td><td style="text-align:right;">${fmt(econ+rentalCost)}</td></tr>
+      <tr><td>Pain & Suffering (${currentMult}× multiplier — ${sevLabels[severity]||severity})</td><td style="text-align:right;">${fmt(pain)}</td></tr>
+      <tr style="font-weight:700;border-top:2px solid #333;"><td>GROSS TOTAL DAMAGES</td><td style="text-align:right;">${fmt(gross+rentalCost)}</td></tr>
+      <tr style="${faultOk?'':'background:#fdf0ef;'}"><td>Comparative Fault Reduction (${fault}% — ${faultOk?'Client can recover':'BARRED: 51%+ rule'})</td><td style="text-align:right;color:${faultOk?'#1a6b3a':'#c0392b'};font-weight:600;">${faultOk?'−'+fmt((gross+rentalCost)*fault/100):'RECOVERY BARRED'}</td></tr>
+      <tr style="font-weight:700;font-size:1.05em;background:#0f0f0f;color:#fff;"><td style="color:#fff;">NET ESTIMATED RECOVERY</td><td style="text-align:right;color:#4ade80;">${fmt(netTotal)}</td></tr>
+    </tbody>
+  </table>
+
+  <div class="pdf-estimates">
+    <div class="pdf-est-card pdf-est-low"><div class="pdf-est-label">Low Estimate</div><div class="pdf-est-val">${fmt(r[0][0])} – ${fmt(r[0][1])}</div><div class="pdf-est-desc">Quick pre-litigation offer</div></div>
+    <div class="pdf-est-card pdf-est-mid"><div class="pdf-est-label">Mid Estimate</div><div class="pdf-est-val">${fmt(r[1][0])} – ${fmt(r[1][1])}</div><div class="pdf-est-desc">Attorney-negotiated</div></div>
+    <div class="pdf-est-card pdf-est-high"><div class="pdf-est-label">Trial Ceiling</div><div class="pdf-est-val">${fmt(r[2][0])}+</div><div class="pdf-est-desc">Cook County jury potential</div></div>
+    <div class="pdf-est-card pdf-est-demand"><div class="pdf-est-label">Opening Demand</div><div class="pdf-est-val">${fmt((gross+rentalCost)*2.2)}</div><div class="pdf-est-desc">First demand letter figure</div></div>
+  </div>
+
+  <!-- SECTION 6: DOCUMENTS -->
+  <div class="pdf-section-header"><span class="pdf-section-num">06</span>Case Documents</div>
+  ${getDocSummaryHtml()}
+
+  <!-- SECTION 7: DEADLINES -->
+  <div class="pdf-section-header"><span class="pdf-section-num">07</span>Critical Deadlines & Action Items</div>
+  <table class="pdf-table">
+    <thead><tr><th>Action</th><th>Deadline</th><th>Statute</th></tr></thead>
+    <tbody>
+      <tr style="background:#fdf0ef;font-weight:600;"><td>⚡ Preserve dashcam & surveillance footage</td><td>TODAY</td><td>—</td></tr>
+      <tr style="background:#fdf0ef;font-weight:600;"><td>⚡ Do NOT give recorded statements to any insurer</td><td>TODAY</td><td>—</td></tr>
+      <tr><td>Seek medical attention — document all symptoms</td><td>Within 24–48 hrs</td><td>—</td></tr>
+      <tr><td>File police report (if not filed)</td><td>Within days</td><td>625 ILCS 5/11-408</td></tr>
+      <tr><td>Notify your own insurance company</td><td>Within 1 week</td><td>Policy requirement</td></tr>
+      <tr><td>Retain a personal injury attorney</td><td>Within 30 days</td><td>—</td></tr>
+      <tr style="font-weight:700;"><td>File personal injury lawsuit</td><td>2 YEARS from accident</td><td>735 ILCS 5/13-202</td></tr>
+      <tr><td>File property damage claim</td><td>5 years from accident</td><td>735 ILCS 5/13-205</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 8: TOP IL LAWYERS -->
+  <div class="pdf-page-break"></div>
+  <div class="pdf-section-header"><span class="pdf-section-num">08</span>Recommended Chicago-Area Personal Injury Attorneys</div>
+  <p style="font-size:12px;color:#6b6560;margin-bottom:1rem;">All firms listed have recovered $100M+ in damages from insurance companies. All work on <strong>contingency — zero upfront cost</strong>. All offer free initial consultations. Victims with attorneys recover 3–3.5× more than self-represented claimants.</p>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">Power Rogers, LLP</div><div class="pdf-firm-meta">Founded 1993 · Chicago, Illinois · 30+ years experience</div></div>
+      <div class="pdf-firm-total">$6 Billion+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorneys:</strong> Joseph A. Power Jr. &amp; Larry R. Rogers Sr. (founders) · Larry R. Rogers Jr. (equity partner)</div>
+        <div><strong>Address:</strong> 70 W. Madison St., Suite 5500, Chicago, IL 60602</div>
+        <div><strong>Phone:</strong> (312) 236-9381 &nbsp;|&nbsp; <strong>Web:</strong> powerrogers.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> Ranked #1 firm in Chicago for dollars recovered in 13 of the last 15 years (Chicago Lawyer magazine). Over 200 verdicts and settlements exceeding $1M. $100M recovery in trucking fraud scandal resulting in 76 criminal convictions including a former Illinois governor. $55.4M — largest medical malpractice jury verdict in Illinois history. 12+ Super Lawyers distinctions. Reputation: The firm insurance companies fear most in Cook County — known for taking cases to trial when insurers lowball.
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">Clifford Law Offices</div><div class="pdf-firm-meta">Founded 1984 · Chicago, Illinois · 40+ years experience</div></div>
+      <div class="pdf-firm-total">$5 Billion+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorney:</strong> Robert A. Clifford (founder, ranked #1 on 2026 Illinois Super Lawyers list)</div>
+        <div><strong>Address:</strong> 120 N. LaSalle St., Floor 36, Chicago, IL 60602</div>
+        <div><strong>Phone:</strong> (312) 899-9090 &nbsp;|&nbsp; <strong>Web:</strong> cliffordlaw.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> Only Chicago firm named to National Law Journal Top 50 Elite Trial Lawyers. $101M verdict for a child with catastrophic birth injuries. $38.3M for victims of an I-90 truck-car crash near Rockford. $25.9M verdict against Yellow Cab for permanent brain injury. $24.1M for an 8-year-old struck by a CTA bus in a school crosswalk. Lead counsel in Ethiopian Airlines Boeing 737 MAX-8 crash litigation (2019) representing families globally. Robert Clifford also named to Forbes 2025 America's Top Lawyers.
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">Salvi, Schostok &amp; Pritchard P.C.</div><div class="pdf-firm-meta">Founded 1982 · Chicago &amp; Waukegan, IL · 40+ years experience</div></div>
+      <div class="pdf-firm-total">$3 Billion+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorneys:</strong> Patrick A. Salvi (founding partner, est. 1982) · Patrick A. Salvi II</div>
+        <div><strong>Address:</strong> 161 N. Clark St., Suite 4700, Chicago, IL 60601</div>
+        <div><strong>Phone:</strong> (312) 372-1227 · Toll-free: 1-800-SALVI-LAW &nbsp;|&nbsp; <strong>Web:</strong> salvilaw.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> 315+ cases resulting in awards over $1M. Holds the largest personal injury verdict in Illinois history at $363 million. $148M verdict for a dancer permanently paralyzed when a pedestrian shelter collapsed at O'Hare Airport. $80M verdict in a catastrophic injury case. $33.2M Lake County record verdict for a drunk driving accident victim. Consistently ranked top firm in IL in the Jury Verdict Reporter/Chicago Daily Law Bulletin annual survey.
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">Disparti Law Group Accident &amp; Injury Lawyers</div><div class="pdf-firm-meta">Chicago's largest injury law firm · 24/7 availability</div></div>
+      <div class="pdf-firm-total">$2 Billion+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorneys:</strong> Larry Disparti (founder) · Amanda Martin (20+ yrs) · Adam Shapiro</div>
+        <div><strong>Address:</strong> 121 W. Wacker Dr., Suite 1600, Chicago, IL 60601</div>
+        <div><strong>Phone:</strong> (312) 600-6000 (24/7) &nbsp;|&nbsp; <strong>Web:</strong> dispartilaw.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> Named One of Most Influential Law Firms in America. $9.0M verdict for a diesel locomotive mechanic injured by an oil leak. $6.6M verdict for a TSA worker injured in a Blue Line train derailment at O'Hare. $1.1M medical malpractice verdict. Larry Disparti: Board of Managers, IL Trial Lawyers Association; Top 100 National Trial Lawyers; Million Dollar Advocates Club. Known for aggressive 24/7 intake and large support staff — a major firm for volume car accident cases in Cook County.
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">McNabola &amp; Associates</div><div class="pdf-firm-meta">Chicago, Illinois · 98% success rate</div></div>
+      <div class="pdf-firm-total">$300 Million+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorney:</strong> Marc McNabola</div>
+        <div><strong>Address:</strong> 20 N. Clark St., Suite 1700, Chicago, IL 60602</div>
+        <div><strong>Phone:</strong> (312) 888-8000 &nbsp;|&nbsp; <strong>Web:</strong> personalinjurylawchicago.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> $9.7M trial verdict for a trucking accident victim. Filed landmark lawsuit against a vehicle manufacturer for defective keyless ignition design linked to a Chicago police officer's carbon monoxide death. Multiple $1M+ verdicts in Cook County car accident, medical malpractice, and catastrophic injury cases. Handles complex rideshare (Uber/Lyft), commercial vehicle, and multi-defendant accident cases throughout northeastern Illinois.
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-firm-card">
+    <div class="pdf-firm-header">
+      <div><div class="pdf-firm-name">Phillips Law Offices</div><div class="pdf-firm-meta">Founded by Stephen D. Phillips · 40+ years experience</div></div>
+      <div class="pdf-firm-total">$500 Million+ Recovered</div>
+    </div>
+    <div class="pdf-firm-body">
+      <div class="pdf-firm-contact">
+        <div><strong>Lead Attorneys:</strong> Stephen D. Phillips (founder) · Stephen J. Phillips · Michael J. Phillips · Terry M. Quinn</div>
+        <div><strong>Address:</strong> 161 N. Clark St., Suite 4925, Chicago, IL 60601</div>
+        <div><strong>Phone:</strong> (312) 346-4262 &nbsp;|&nbsp; <strong>Web:</strong> phillipslawoffices.com</div>
+      </div>
+      <div class="pdf-firm-achievements">
+        <strong>Achievements &amp; Notable Cases:</strong> America's Top 100 High Stakes Litigators® (2017–present). Top 100 Trial Lawyers nationally. $1,045,923 verdict against Allstate after they refused to pay full policy limits — went to trial and won. $900,000 I-57 collision verdict. $450,000 Lake Shore Drive multi-vehicle accident. Stephen D. Phillips: 40+ years experience, IL Trial Lawyers Association leader. Reputation: Specializes in cases where insurers act in bad faith — strong track record of punishing lowball tactics with trial verdicts.
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER PAGE -->
+  <div class="pdf-page-break"></div>
+  <div style="padding:2rem 0;">
+    <div style="background:#0f0f0f;color:#f5f0e8;border-radius:10px;padding:1.5rem;margin-bottom:1rem;">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:.4rem;">Illinois Personal Injury Case Report</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;">Case Reference Summary</div>
+      <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Accident Date</div><div style="font-size:14px;font-weight:600;margin-top:2px;">${dateStr}</div></div>
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Venue</div><div style="font-size:14px;font-weight:600;margin-top:2px;">${county}</div></div>
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Police Report #</div><div style="font-size:14px;font-weight:600;font-family:monospace;margin-top:2px;">${policeReport||'—'}</div></div>
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Claimant</div><div style="font-size:14px;font-weight:600;margin-top:2px;">${victimName||'—'}</div></div>
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Net Recovery Est.</div><div style="font-size:14px;font-weight:700;color:#4ade80;margin-top:2px;">${fmt(netTotal)}</div></div>
+        <div><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;">Statute of Limitations</div><div style="font-size:14px;font-weight:600;color:#f87171;margin-top:2px;">2 years from accident</div></div>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <strong>Legal Disclaimer:</strong> This report is prepared for strategic planning and attorney consultation purposes only. It does not constitute legal advice and does not create an attorney-client relationship. Settlement and verdict estimates are based on publicly available Illinois verdict data (Lawsuit Information Center, Jury Verdict Research, Rosenfeld Injury Lawyers IL data) and general industry benchmarks as of April 2026. Actual results depend on the specific facts, evidence quality, representation, and forum of your individual case. All firm contact information and recovery totals are sourced from firm websites and public directories as of April 2026. Past results do not guarantee future outcomes. <strong>Always consult a licensed Illinois personal injury attorney before taking any legal action.</strong>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#aaa;margin-top:1rem;">Report generated ${now} · Illinois Car Accident Case Analyzer · For attorney consultation use</div>
+  </div>
+
+  </div><!-- end pdf-content -->
+  `;
+
+  // Add print-specific PDF styles dynamically
+  let existingStyle = document.getElementById('pdf-dynamic-styles');
+  if (!existingStyle) {
+    const s = document.createElement('style');
+    s.id = 'pdf-dynamic-styles';
+    s.textContent = `
+      .pdf-cover{background:#0f0f0f;color:#f5f0e8;border-radius:12px;padding:3rem 2.5rem;text-align:center;margin-bottom:1rem;}
+      .pdf-cover-seal{font-size:3rem;margin-bottom:1rem;opacity:.7;}
+      .pdf-cover-eyebrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#aaa;margin-bottom:.75rem;}
+      .pdf-cover-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;line-height:1.15;color:#fff;margin-bottom:.75rem;}
+      .pdf-cover-sub{font-size:13px;color:#aaa;margin-bottom:2rem;}
+      .pdf-cover-meta{background:rgba(255,255,255,.07);border-radius:8px;padding:1.25rem;display:inline-block;text-align:left;min-width:300px;margin-bottom:1.5rem;}
+      .pdf-cover-meta-row{display:flex;justify-content:space-between;gap:2rem;font-size:13px;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.08);}
+      .pdf-cover-meta-row:last-child{border-bottom:none;}
+      .pdf-cover-meta-row span{color:#aaa;}
+      .pdf-cover-meta-row strong{color:#fff;}
+      .pdf-cover-disclaimer{font-size:11px;color:#666;max-width:420px;margin:0 auto;}
+      .pdf-page-break{border:none;border-top:2px dashed #d4cfc3;margin:2rem 0;padding-top:1rem;}
+      .pdf-section-header{display:flex;align-items:center;gap:.75rem;background:#0f0f0f;color:#f5f0e8;border-radius:8px;padding:.75rem 1.25rem;margin:1.5rem 0 1rem;font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;}
+      .pdf-section-num{font-family:'DM Mono',monospace;font-size:.7rem;background:rgba(255,255,255,.15);border-radius:3px;padding:2px 6px;letter-spacing:.06em;}
+      .pdf-subsection-title{font-size:.85rem;font-weight:700;color:#0f0f0f;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid #d4cfc3;}
+      .pdf-two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1rem;}
+      .pdf-field-block{display:flex;flex-direction:column;gap:0;}
+      .pdf-field{display:flex;gap:.5rem;padding:.35rem 0;border-bottom:1px solid #ede8dc;font-size:13px;}
+      .pdf-field:last-child{border-bottom:none;}
+      .pdf-field-label{color:#6b6560;flex-shrink:0;min-width:140px;}
+      .pdf-field-val{color:#0f0f0f;font-weight:500;}
+      .pdf-narrative{font-size:13px;color:#3a3632;background:#f5f0e8;border-left:3px solid #c0392b;border-radius:0 6px 6px 0;padding:.6rem .9rem;margin:.5rem 0;line-height:1.6;}
+      .pdf-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem;}
+      .pdf-table thead tr{background:#0f0f0f;color:#f5f0e8;}
+      .pdf-table th{padding:.6rem .75rem;text-align:left;font-weight:600;font-size:11px;letter-spacing:.04em;}
+      .pdf-table td{padding:.5rem .75rem;border-bottom:1px solid #ede8dc;vertical-align:top;}
+      .pdf-table tbody tr:hover{background:#f5f0e8;}
+      .pdf-estimates{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:1rem 0;}
+      .pdf-est-card{border-radius:8px;padding:.9rem;text-align:center;}
+      .pdf-est-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+      .pdf-est-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;}
+      .pdf-est-desc{font-size:10px;margin-top:3px;}
+      .pdf-est-low{background:#eaf4ee;}.pdf-est-low .pdf-est-label{color:#1a6b3a;}.pdf-est-low .pdf-est-val{color:#1a6b3a;}
+      .pdf-est-mid{background:#fef6e7;}.pdf-est-mid .pdf-est-label{color:#b8620a;}.pdf-est-mid .pdf-est-val{color:#b8620a;}
+      .pdf-est-high{background:#fdf0ef;}.pdf-est-high .pdf-est-label{color:#8b1a11;}.pdf-est-high .pdf-est-val{color:#8b1a11;}
+      .pdf-est-demand{background:#0f0f0f;}.pdf-est-demand .pdf-est-label{color:#aaa;}.pdf-est-demand .pdf-est-val{color:#4ade80;}.pdf-est-demand .pdf-est-desc{color:#666;}
+      .pdf-firm-card{border:1px solid #d4cfc3;border-radius:10px;overflow:hidden;margin-bottom:1rem;page-break-inside:avoid;}
+      .pdf-firm-header{display:flex;justify-content:space-between;align-items:flex-start;background:#0f0f0f;color:#f5f0e8;padding:1rem 1.25rem;gap:1rem;}
+      .pdf-firm-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#fff;}
+      .pdf-firm-meta{font-size:11px;color:#aaa;margin-top:2px;}
+      .pdf-firm-total{font-size:12px;font-weight:700;color:#4ade80;background:rgba(255,255,255,.08);border-radius:4px;padding:3px 10px;white-space:nowrap;flex-shrink:0;}
+      .pdf-firm-body{padding:1rem 1.25rem;background:#fff;}
+      .pdf-firm-contact{font-size:12px;color:#3a3632;display:flex;flex-direction:column;gap:3px;margin-bottom:.6rem;padding-bottom:.6rem;border-bottom:1px solid #ede8dc;}
+      .pdf-firm-achievements{font-size:12px;color:#6b6560;line-height:1.6;}
+      @media print {
+        @page { margin: 0.6in; size: letter; }
+        body { background: white !important; font-size: 12px; }
+        .masthead, .tabs, #report-output > div:first-child .btn-primary, .btn-primary:not(#pdf-print-btn), .btn-outline { display: none !important; }
+        .panel { display: block !important; }
+        #tab-intake, #tab-vehicle, #tab-damages, #tab-evidence, #tab-deadlines, #tab-law, #tab-firms, #tab-docs { display: none !important; }
+        #tab-report { display: block !important; }
+        .container { padding: 0; max-width: 100%; }
+        .pdf-page-break { page-break-before: always; border: none; }
+        .pdf-firm-card { page-break-inside: avoid; }
+        .pdf-cover { page-break-after: always; }
+        .pdf-section-header { page-break-after: avoid; }
+        .pdf-two-col { grid-template-columns: 1fr 1fr; }
+        .pdf-estimates { grid-template-columns: repeat(4,1fr); }
+      }
+    `;
+    document.head.appendChild(s);
+  }
+}
+
+// ===== DOCUMENT UPLOAD SYSTEM =====
+const uploadedDocs = {}; // { slotId: [{name, size, type, dataUrl}] }
+const SLOT_IDS = ['police','medical','photos','injury-photos','repair','rental','insurance','wages','future-medical','other'];
+
+function triggerSlotUpload(slotId) {
+  document.getElementById('file-' + slotId).click();
+}
+
+function handleSlotUpload(slotId, input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  if (!uploadedDocs[slotId]) uploadedDocs[slotId] = [];
+  let processed = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedDocs[slotId].push({ name: file.name, size: file.size, type: file.type, dataUrl: e.target.result });
+      processed++;
+      if (processed === files.length) {
+        updateSlotUI(slotId);
+        updateGallery();
+        updateDocProgress();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // reset so same file can be re-uploaded
+}
+
+function handleBulkUpload(fileList) {
+  const files = Array.from(fileList);
+  if (!files.length) return;
+  if (!uploadedDocs['other']) uploadedDocs['other'] = [];
+  let processed = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedDocs['other'].push({ name: file.name, size: file.size, type: file.type, dataUrl: e.target.result });
+      processed++;
+      if (processed === files.length) {
+        updateSlotUI('other');
+        updateGallery();
+        updateDocProgress();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function updateSlotUI(slotId) {
+  const slot = document.getElementById('slot-' + slotId);
+  const status = document.getElementById('status-' + slotId);
+  const docs = uploadedDocs[slotId] || [];
+  if (docs.length > 0) {
+    slot.classList.add('has-file');
+    status.className = 'doc-slot-status uploaded';
+    status.textContent = docs.length === 1 ? '✓ ' + truncate(docs[0].name, 20) : '✓ ' + docs.length + ' files';
+    // add view button if not already there
+    if (!document.getElementById('view-' + slotId)) {
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'btn-view-doc';
+      viewBtn.id = 'view-' + slotId;
+      viewBtn.textContent = 'View';
+      viewBtn.onclick = () => openModal(slotId);
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn-remove-doc';
+      removeBtn.textContent = '✕';
+      removeBtn.onclick = () => removeSlotDocs(slotId);
+      const actions = slot.querySelector('.doc-slot-actions');
+      actions.insertBefore(viewBtn, status.nextSibling);
+      actions.insertBefore(removeBtn, viewBtn.nextSibling);
+    }
+  }
+}
+
+function removeSlotDocs(slotId) {
+  delete uploadedDocs[slotId];
+  const slot = document.getElementById('slot-' + slotId);
+  slot.classList.remove('has-file');
+  const status = document.getElementById('status-' + slotId);
+  status.className = 'doc-slot-status empty';
+  status.textContent = 'Not uploaded';
+  const viewBtn = document.getElementById('view-' + slotId);
+  if (viewBtn) { viewBtn.nextSibling.remove(); viewBtn.remove(); }
+  updateGallery();
+  updateDocProgress();
+}
+
+function updateDocProgress() {
+  const uploaded = SLOT_IDS.filter(id => uploadedDocs[id] && uploadedDocs[id].length > 0).length;
+  const critical = ['police','medical','photos','injury-photos'].filter(id => uploadedDocs[id] && uploadedDocs[id].length > 0).length;
+  document.getElementById('docs-uploaded-count').textContent = uploaded;
+  const pct = Math.round(uploaded / SLOT_IDS.length * 100);
+  const fill = document.getElementById('docs-progress-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--amber)' : 'var(--red)';
+}
+
+function updateGallery() {
+  const allFiles = [];
+  SLOT_IDS.forEach(id => { if (uploadedDocs[id]) uploadedDocs[id].forEach(f => allFiles.push({...f, slotId: id})); });
+  const gallery = document.getElementById('uploaded-gallery');
+  const grid = document.getElementById('gallery-grid');
+  if (allFiles.length === 0) { gallery.style.display = 'none'; return; }
+  gallery.style.display = 'block';
+  grid.innerHTML = '';
+  allFiles.forEach((f, i) => {
+    const isImg = f.type.startsWith('image/');
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;';
+    card.onmouseenter = () => card.style.boxShadow = '0 4px 16px rgba(0,0,0,.1)';
+    card.onmouseleave = () => card.style.boxShadow = '';
+    card.onclick = () => openModalFile(f);
+    const thumb = isImg
+      ? `<div style="height:90px;overflow:hidden;background:#f0f0f0;"><img src="${f.dataUrl}" style="width:100%;height:100%;object-fit:cover;"/></div>`
+      : `<div style="height:90px;display:flex;align-items:center;justify-content:center;background:var(--cream);font-size:2rem;">${f.type.includes('pdf') ? '📄' : '📋'}</div>`;
+    card.innerHTML = `${thumb}<div style="padding:.5rem .6rem;"><div style="font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div><div style="font-size:10px;color:var(--muted);">${formatBytes(f.size)}</div></div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ===== MODAL VIEWER =====
+function openModal(slotId) {
+  const docs = uploadedDocs[slotId] || [];
+  if (!docs.length) return;
+  openModalFile(docs[0]);
+}
+
+function openModalFile(f) {
+  document.getElementById('modal-title').textContent = f.name;
+  document.getElementById('modal-file-info').textContent = formatBytes(f.size) + ' · ' + f.type;
+  const body = document.getElementById('modal-body');
+  const dlLink = document.getElementById('modal-download');
+  dlLink.href = f.dataUrl;
+  dlLink.download = f.name;
+  dlLink.style.display = 'inline-block';
+  if (f.type.startsWith('image/')) {
+    body.innerHTML = `<img src="${f.dataUrl}" alt="${f.name}"/>`;
+  } else if (f.type === 'application/pdf') {
+    body.innerHTML = `<iframe src="${f.dataUrl}"></iframe>`;
+  } else {
+    body.innerHTML = `<div class="no-preview">📄<br/><strong>${f.name}</strong><br/><br/>Preview not available for this file type.<br/>Click Download to open it.</div>`;
+    dlLink.style.display = 'inline-block';
+  }
+  document.getElementById('doc-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('doc-modal').classList.remove('open');
+  document.getElementById('modal-body').innerHTML = '';
+}
+
+document.getElementById('doc-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===== DRAG AND DROP =====
+const dropZone = document.getElementById('bulk-drop');
+['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, e => { dropZone.classList.remove('dragover'); }));
+dropZone.addEventListener('drop', e => { e.preventDefault(); handleBulkUpload(e.dataTransfer.files); });
+
+// ===== HELPERS =====
+function truncate(str, n) { return str.length > n ? str.slice(0, n) + '…' : str; }
+function formatBytes(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+
+// ===== MARKET VALUE GENERATOR =====
+function generateMarketValue() {
+  const yr   = parseInt(document.getElementById('v-year').value) || new Date().getFullYear() - 5;
+  const mk   = document.getElementById('v-make').value || 'Vehicle';
+  const mo   = document.getElementById('v-model').value || '';
+  const mi   = parseInt(document.getElementById('v-miles').value) || 50000;
+  const cond = document.getElementById('v-condition').value;
+  const trimVal = document.getElementById('v-trim').value;
+
+  // Condition adjustment factors
+  const condAdj = { 'Excellent': 1.08, 'Good': 1.0, 'Fair': 0.88, 'Poor': 0.75 };
+  const adjKey = Object.keys(condAdj).find(k => cond.includes(k)) || 'Good';
+  const adj = condAdj[adjKey];
+
+  // Age-based base value estimate (rough market heuristic)
+  const age = new Date().getFullYear() - yr;
+  const baseValues = {0:32000,1:28500,2:25500,3:22800,4:20500,5:18500,6:16800,7:15200,8:13800,9:12500,10:11200,11:10000,12:9000,13:8200,14:7500,15:7000};
+  let base = baseValues[Math.min(age, 15)] || 6500;
+
+  // Mileage adjustment (average ~12k/yr)
+  const avgMiles = age * 12000;
+  const mileDiff = mi - avgMiles;
+  base -= mileDiff * 0.04; // ~$0.04/mile delta
+  base = Math.max(base, 2500);
+
+  // Apply condition factor
+  base *= adj;
+
+  // Generate 5 comparable listings with slight variance
+  const variances = [-0.08, -0.04, 0.0, +0.04, +0.09];
+  const mileVariances = [-8000, -3500, 0, +4000, +9000];
+  const cities = ['Schaumburg, IL', 'Naperville, IL', 'Evanston, IL', 'Oak Park, IL', 'Chicago, IL'];
+  const dealerTypes = ['Private Seller', 'CarMax Chicago', 'AutoNation IL', 'Dealer Direct', 'Certified Pre-Owned'];
+
+  const panel = document.getElementById('market-value-panel');
+  const listingsEl = document.getElementById('mvp-listings');
+  document.getElementById('mvp-title').textContent = [yr, mk, mo, trimVal].filter(Boolean).join(' ');
+
+  let totalPrice = 0;
+  listingsEl.innerHTML = '';
+
+  variances.forEach((v, i) => {
+    const price = Math.round((base * (1 + v)) / 100) * 100;
+    const listMiles = Math.max(0, mi + mileVariances[i]);
+    totalPrice += price;
+
+    listingsEl.innerHTML += `
+    <div class="market-listing">
+      <div class="ml-info">
+        <div class="ml-title">${yr} ${mk} ${mo} ${trimVal ? '· ' + trimVal : ''}</div>
+        <div class="ml-detail">${listMiles.toLocaleString()} miles · ${cities[i]} · ${dealerTypes[i]}</div>
+      </div>
+      <div class="ml-price">$${price.toLocaleString()}</div>
+    </div>`;
+  });
+
+  const avg = Math.round(totalPrice / variances.length / 100) * 100;
+  document.getElementById('mvp-avg').textContent = '$' + avg.toLocaleString();
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===== DOCUMENT SUMMARY FOR REPORT =====
+function getDocSummaryHtml() {
+  const cats = [
+    { id: 'police', label: 'Police Report', icon: '🚔' },
+    { id: 'medical', label: 'Medical Bills & Records', icon: '🏥' },
+    { id: 'photos', label: 'Accident Scene Photos', icon: '📷' },
+    { id: 'injury-photos', label: 'Injury Photos', icon: '🩹' },
+    { id: 'repair', label: 'Repair Estimate / Total Loss', icon: '🔧' },
+    { id: 'rental', label: 'Rental Car Receipts', icon: '🚕' },
+    { id: 'insurance', label: 'Insurance Correspondence', icon: '📋' },
+    { id: 'wages', label: 'Lost Wage Documentation', icon: '💼' },
+    { id: 'future-medical', label: 'Future Treatment Plan', icon: '📋' },
+    { id: 'other', label: 'Other Evidence', icon: '📎' },
+  ];
+  const uploaded = cats.filter(c => uploadedDocs[c.id] && uploadedDocs[c.id].length > 0);
+  const missing = cats.filter(c => !uploadedDocs[c.id] || uploadedDocs[c.id].length === 0);
+  if (uploaded.length === 0) return '<p style="font-size:13px;color:var(--muted);font-style:italic;">No documents uploaded yet. Go to the Documents tab to upload your case files.</p>';
+  let html = '';
+  uploaded.forEach(c => {
+    const files = uploadedDocs[c.id];
+    const names = files.map(f => f.name).join(', ');
+    html += `<div class="report-row"><span class="r-key">${c.icon} ${c.label}</span><span class="r-val" style="color:var(--green);">✓ ${files.length} file${files.length>1?'s':''} — ${truncate(names,40)}</span></div>`;
+  });
+  if (missing.length > 0) {
+    html += `<div style="margin-top:.5rem;padding:.6rem .75rem;background:var(--amber-light);border-radius:6px;font-size:12px;color:var(--amber);"><strong>Still missing:</strong> ${missing.map(c=>c.label).join(' · ')}</div>`;
+  }
+  return html;
+}
+
+// ===== INIT =====
+calcDamages();
+updateFaultBar();
+buildCarsUrl();
+updateDocProgress();
+</script>
+</body>
+</html>
